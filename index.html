@@ -1,844 +1,880 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>肖桐 - 游戏策划作品集</title>
-    <!-- 引入 Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 引入 React 和 ReactDOM -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <!-- 引入 Babel 用于在浏览器中编译 JSX -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <style>
-        body { margin: 0; padding: 0; background-color: #0a0a0c; }
-        /* 自定义滚动条样式 */
-        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #0a0a0c; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #334155; }
-    </style>
-</head>
-<body>
-    <div id="root"></div>
+import React, { useState, useEffect, useRef } from 'react';
 
-    <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
+// --- 内置 SVG 图标组件 (替代 lucide-react 避免环境依赖冲突) ---
+const Icon = ({ name, size = 24, className = "" }) => {
+  const icons = {
+    Gamepad2: <><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h4"/><path d="M8 10v4"/><path d="M15 13h.01"/><path d="M18 11h.01"/></>,
+    Terminal: <><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></>,
+    Settings2: <><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="7" r="3"/><circle cx="7" cy="17" r="3"/></>,
+    Box: <><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></>,
+    Cpu: <><rect x="4" y="4" width="16" height="16" rx="2" ry="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></>,
+    Network: <><rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"/><path d="M12 12V8"/></>,
+    Layers: <><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 12 12 17 22 12"/><polyline points="2 17 12 22 22 17"/></>,
+    Code: <><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></>,
+    MonitorPlay: <><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/><polygon points="10 7 15 10 10 13 10 7"/></>,
+    FileText: <><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></>,
+    Github: <><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></>,
+    Link2: <><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></>,
+    ChevronDown: <><polyline points="6 9 12 15 18 9"/></>,
+    Mail: <><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></>,
+    Trophy: <><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7c0 3.31 2.69 6 6 6s6-2.69 6-6V2z"/></>,
+    GraduationCap: <><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></>,
+    Clock: <><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>,
+    Briefcase: <><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></>,
+    X: <><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>,
+    Maximize2: <><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></>,
+    Check: <><polyline points="20 6 9 17 4 12"/></>
+  };
+  
+  return (
+    <svg 
+      xmlns="http://www.w3.org/2000/svg" 
+      width={size} 
+      height={size} 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round" 
+      className={className}
+    >
+      {icons[name]}
+    </svg>
+  );
+};
 
-        // --- 内置 SVG 图标组件 ---
-        const Icon = ({ name, size = 24, className = "" }) => {
-          const icons = {
-            Gamepad2: <><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h4"/><path d="M8 10v4"/><path d="M15 13h.01"/><path d="M18 11h.01"/></>,
-            Terminal: <><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></>,
-            Settings2: <><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="7" r="3"/><circle cx="7" cy="17" r="3"/></>,
-            Box: <><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></>,
-            Cpu: <><rect x="4" y="4" width="16" height="16" rx="2" ry="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></>,
-            Network: <><rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"/><path d="M12 12V8"/></>,
-            Layers: <><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 12 12 17 22 12"/><polyline points="2 17 12 22 22 17"/></>,
-            Code: <><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></>,
-            MonitorPlay: <><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/><polygon points="10 7 15 10 10 13 10 7"/></>,
-            FileText: <><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></>,
-            Github: <><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></>,
-            Link2: <><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></>,
-            ChevronDown: <><polyline points="6 9 12 15 18 9"/></>,
-            Mail: <><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></>,
-            Trophy: <><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7c0 3.31 2.69 6 6 6s6-2.69 6-6V2z"/></>,
-            GraduationCap: <><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></>,
-            Clock: <><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>,
-            Briefcase: <><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></>,
-            X: <><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>,
-            Maximize2: <><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></>,
-            Check: <><polyline points="20 6 9 17 4 12"/></>
-          };
-          
-          return (
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              width={size} 
-              height={size} 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              className={className}
-            >
-              {icons[name]}
-            </svg>
-          );
-        };
+// --- 模拟数据 ---
+const PORTFOLIO_DATA = {
+  name: "肖桐",
+  title: "Game Designer",
+  class: "系统策划 / 关卡策划",
+  // 新增：头像/照片链接
+  avatar: "https://github.com/user-attachments/assets/226c7542-36df-40d0-ad06-7e72df56ee85", 
+  slogan: "定义秩序，让无序的自由成为可能。",
+  about: "拥有多段GameJam游戏策划与游戏公司策划实习经历。精通系统设计与经济系统搭建。熟练使用Unity和UE5引擎进行白盒原型开发。",
+  contact: {
+    phone: "+86 13685213912",
+    email: "2996869899@qq.com"
+  },
+  stats: {
+    STR: 85, AGI: 80, INT: 90, WIS: 75
+  },
+  skills: [
+    { name: "系统与数值设计", level: 90, icon: <Icon name="Network" size={16} />, type: "Float" },
+    { name: "关卡设计", level: 95, icon: <Icon name="Box" size={16} />, type: "Vector3" },
+    { name: "剧情叙事", level: 85, icon: <Icon name="Layers" size={16} />, type: "String" },
+    { name: "Unity 原型开发", level: 90, icon: <Icon name="Cpu" size={16} />, type: "Boolean" },
+    { name: "UE5 蓝图", level: 75, icon: <Icon name="Settings2" size={16} />, type: "Event" }
+  ],
+  projects: [
+    {
+      id: "PROJ_001",
+      title: "《Dual Horizon》",
+      genre: "第三人称3D解谜冒险",
+      engine: "Unity",
+      role: "主策-系统/关卡策划",
+      image: "https://github.com/user-attachments/assets/dbcfca8d-a2eb-4b7b-b18a-98bef06541af",
+      description: "2025年TGJ参赛作品，侧重于重力切换与空间解谜的独立游戏原型",
+      contributions: [
+        "空间叠加：外部世界是一片废墟，而内部世界则是一个被淹没的水下领域。在视觉上和物理规则上形成鲜明对比。",
+        "重力差异：通过不同空间的重力差异设计玩法机制，并将机制进行组合，创造出更多的趣味性玩法，围绕合作与互补设计",
+      ],
+      details: {
+        video: `<iframe src="//player.bilibili.com/player.html?isOutside=true&aid=116335027750428&bvid=BV1GX9FBxEkR&cid=37178575687&p=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"></iframe>`, 
+        longText: "作为一款参加TGJ的作品，我们在5天内完成了核心循环的设计和3个大关卡的。玩家在两个重叠的世界中穿梭去利用不同的重力和物理规则来解决谜题，外世界是一个有着正常重力的坚固废墟，而内世界则是一个沉浸在半透明金色水体中的低重力空间。通过实时切换世界、操控物体以及组合动作，玩家将逐渐揭开艾瑟兰王国衰落与重生的故事。并借助温暖的艺术风格、柔和的音效设计以及循序渐进的故事叙述，营造出一种宁静、沉思的体验，让玩家在解谜的过程中感受到内心的平静，并体会到自我和解的可能性。",
+        images: [
+          "https://github.com/user-attachments/assets/a5c1a4a5-8584-473c-a3c3-166e00221be9",
+          "https://github.com/user-attachments/assets/10296524-31a8-4c73-b594-5baca0dd2a9d",
+          "https://github.com/user-attachments/assets/07c9fa0d-0dbf-4bcf-96eb-bf992f141c29",
+          "https://github.com/user-attachments/assets/b0da5cec-d9a7-44d2-81b1-ce6ef6bf8799"
+        ]
+      }
+    },
+    {
+      id: "PROJ_002",
+      title: "《诡梯》",
+      genre: "第一人称2D微恐视觉游戏",
+      engine: "Unity",
+      role: "主策-系统/关卡策划",
+      image: "https://github.com/user-attachments/assets/bfd84aaa-cdca-40da-b315-a628f78d065c",
+      description: "2026年GGJ参赛作品，偏生存类游戏，曾获Game Jam最佳玩法设计奖。",
+      contributions: [
+        "识别系统：通过有条件的识别道具来判断人与鬼之间的隐性差异，并在确认后进行驱散，提供奖惩机制反馈，帮助玩家确认操作是否成功。",
+        "电梯机制：构建无序停靠的电梯来营造玩家的混沌感，同时进入电梯的人群职业设计于社会争议事件群体，通过反差来隐性叙事讽刺人鬼身份。",
+      ],
+      details: {
+        video: `<iframe src="//player.bilibili.com/player.html?isOutside=true&aid=116335078018248&bvid=BV1D99FB9EkN&cid=37178967770&p=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"></iframe>`,  
+        longText: "作为一款参加上海市Global Game Jam的作品，我们在72小时内完成了核心循环的系统设计。使用了经典的『引入-强化-扭转-综合』的任天堂式关卡设计理念来把控单关卡节奏，小体量又不单调。为了保证迭代效率，我将可操作道具都封装成了可复用的Prefab变体。",
+        images: [
+          "https://github.com/user-attachments/assets/daba718a-19bc-4ad1-8319-a6622dd49081",
+          "https://github.com/user-attachments/assets/0314c6c7-cb37-42d0-a9f2-74706b453bbf",
+          "https://github.com/user-attachments/assets/8eefa376-3663-4fd5-be9f-b48d9af0b05c",
+          "https://github.com/user-attachments/assets/f1b9af88-6efc-480c-a245-a882d6dd627b"
+        ]
+      }
+    },
+    {
+      id: "PROJ_003",
+      title: "《边界·消融》",
+      genre: "VR剧情向沉浸式角色扮演游戏",
+      engine: "Unity",
+      role: "全流程",
+      image: "https://github.com/user-attachments/assets/82e7c634-cff6-493b-b688-7e70af9c88d7",
+      description: "2025年4月-8月个人VR游戏作品，收录于2025年7月《装饰》杂志。",
+      contributions: [
+        "感知设计：通过VR特性体验，获取视、听、触多感官结合的自然感知，实现具身认知达到心流沉浸。",
+        "行为设计：采用轻量化交互以控制VR学习成本，插入AI大语言模型实时引导玩家行为、解答问题，通过“收集—获取—反馈”的交互闭环推动叙事发展。",
+      ],
+      details: {
+        video: `<iframe src="//player.bilibili.com/player.html?isOutside=true&aid=116249849826374&bvid=BV1pPwqzAEH3&cid=36791454506&p=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"></iframe>`,
+        longText: "作为校内课程独立游戏，我策划并制作了一款基于未来科幻背景的体验模拟器，专注于场景氛围与叙事流程的耦合构建。主要流程使用ProBuilder搭建了所有4个关卡的白盒，通过OpenXR和XRit完成了核心交互机制，并独立完成C#逻辑编写及基础粒子特效制作。此外，我还构建了AI Agent智能体，接入了火山引擎的AI大模型API，集成到游戏中用于实时引导玩家操作，并提供语音对话解答问题。经过多轮测试，AI幻觉率可控，未出现明显偏差。",
+        images: [
+          "https://github.com/user-attachments/assets/36718ae5-1b3b-4e04-a06c-1071dc17eff7",
+          "https://github.com/user-attachments/assets/ba01bc75-36dc-430f-a41f-446b53eafcda",
+          "https://github.com/user-attachments/assets/5ecb7a03-faf0-4244-bad1-2129929d3289",
+          "https://github.com/user-attachments/assets/15b83b31-ca9c-499c-9f8b-3ae678e06e37"
+        ]
+      }
+    },
+    {
+      id: "PROJ_004",
+      title: "《繁花盛于 旧时里弄》",
+      genre: "趣味性交互式网站",
+      engine: "Unity",
+      role: "全流程",
+      image: "https://github.com/user-attachments/assets/f1f12044-d0e9-41ae-b05e-d6ff18c3b699",
+      description: "2025年1-5月个人网站作品，获IEEEPacificVis国际金奖，展出于日本东京庆应义塾大学",
+      contributions: [
+        "严肃游戏：采用趣味性交互于网页端对上海石库门文化从人文、里弄、建筑等维度进行宣传。",
+        "实事调研：实地与书本调研数据，通过Excel完成数据清洗、整合与可视化分析，将其转化为网站内容。",
+      ],
+      details: {
+        video: `<iframe src="//player.bilibili.com/player.html?isOutside=true&aid=116249849826374&bvid=BV1pPwqzAEH3&cid=36791454506&p=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"></iframe>`,
+        longText: "策划并实现了一个科普意义的趣味性交互网站，聚焦上海石库门的建筑记忆与城市变迁。系统采集了里弄生活的声音、图像与口述史料，融合艺术化信息图表与可交互数据叙事——用户可点击对比不同年代的建筑形态、人口密度与空间演变；同时嵌入生活化情节与声音情感引擎，跟随虚拟住户的脚步，在天井、客堂间与灶披间中触发叫卖声、沪剧片段与邻里闲聊，形成沉浸式听觉体验。整个项目以Unity开发并发布为WebGL交互页面，兼顾严肃游戏的任务机制与纪录片的细腻温度，旨在让更多人看见石库门逐渐消逝的美，从一砖一瓦的百年兴衰中直观感知上海乃至世界的变迁。",
+        images: [
+          "https://github.com/user-attachments/assets/0596099e-656e-4d14-b25b-ec2b721fbc42",
+          "https://github.com/user-attachments/assets/08c17ca3-5fe4-474b-b257-fe7adb62a05a",
+          "https://github.com/user-attachments/assets/4fd65f0b-7746-4155-8135-e3526797e543",
+          "https://github.com/user-attachments/assets/63702d4f-cec6-4e03-bc26-9f937e393bcf"
+        ]
+      }
+    }
+  ],
+  education: [
+    {
+      degree: "数字媒体艺术 学士",
+      school: "江南大学",
+      year: "2021 - 2025",
+      details: "主修游戏引擎原理、数据信息可视化、跨平台交互设计-数字娱乐等。3年期间制作个人游戏7个，毕业设计为一款基于Unity和OpenXR开发的VR解谜游戏原型。"
+    },
+    {
+      degree: "交互设计 硕士",
+      school: "同济大学",
+      year: "2025 - 至今",
+      details: "专注于玩家心流模型、沉浸式叙事研究与用户交互设计，期间参与多次Game Jam并担任主策。"
+    }
+  ],
+  academic_records: "以专业第一的成绩获校长特别奖，保研期间获同济大学和清华大学等多所985高校offer，研一课程均分95。设计竞赛获国际奖项2个、国家级奖项3个、省级奖项21个，奖学金累计5w余元。",
+  internships: [
+    {
+      title: "系统策划实习生",
+      company: "叠纸—X6项目组（无限暖暖项目组）",
+      year: "2024.10 - 2025.03",
+      details: "参与《无限暖暖》的大世界系统开发。负责配置和校验游戏内的道具掉落表，独立策划与配置了1.2、1.3、1.5版本肝活与特定游戏任务《寻找史丢丢》，特定任务广受好评后成为不定期返场玩法。并协助主策完成版本迭代的设计文档整理。"
+    }
+  ],
+  gaming_insight: "作为一名杂食性硬核玩家，我相信'量变引起质变'。桌游、主机、PC、手游超过三千小时的各类游戏体验，让我习惯于带着『为什么好玩』的疑问去解构每一个核心循环。我不仅体验沉浸感，更致力于拆解构成这种沉浸感的系统齿轮与关卡骨架。",
+  gaming: [
+    { name: "燕云十六声", hours: "300+", tags: ["动作角色扮演", "箱庭关卡"], remark: "深入拆解了其天宫地窟的箱庭连接与暗线引导设计，并进行仿照搭建白盒测试。" },
+    { name: "模拟人生4", hours: "1000+", tags: ["生活模拟", "系统架构"], remark: "研究了其任务网状结构与系统的迭代，并自己制作了多款Mod以深化游戏体验。" },
+    { name: "刺客信条多系列", hours: "500+", tags: ["动作冒险", "开放世界"], remark: "全多周目通关，极其克制且精准的动作帧设计，绝佳的大地图探索节奏。" },
+    { name: "塞尔达传说王国之泪", hours: "200+", tags: ["开放世界", "物理驱动"], remark: "二周目探索中，深入拆解了其物理引擎系统所构建的多个趣味玩法组合。" }
+  ]
+};
 
-        // --- 模拟数据 ---
-        const PORTFOLIO_DATA = {
-          name: "肖桐",
-          title: "Game Designer",
-          class: "系统策划 / 关卡策划",
-          avatar: "https://github.com/user-attachments/assets/226c7542-36df-40d0-ad06-7e72df56ee85", 
-          slogan: "定义秩序，让无序的自由成为可能。",
-          about: "拥有多段GameJam游戏策划与游戏公司策划实习经历。精通系统设计与经济系统搭建。熟练使用Unity和UE5引擎进行白盒原型开发。",
-          contact: {
-            phone: "+86 13685213912",
-            email: "2996869899@qq.com"
-          },
-          stats: {
-            STR: 85, AGI: 80, INT: 90, WIS: 75
-          },
-          skills: [
-            { name: "System_&_Math", level: 90, icon: <Icon name="Network" size={16} />, type: "Float" },
-            { name: "Level_Design", level: 95, icon: <Icon name="Box" size={16} />, type: "Vector3" },
-            { name: "Narrative_Flow", level: 85, icon: <Icon name="Layers" size={16} />, type: "String" },
-            { name: "Unity_Proto", level: 90, icon: <Icon name="Cpu" size={16} />, type: "Boolean" },
-            { name: "UE5_Blueprint", level: 75, icon: <Icon name="Settings2" size={16} />, type: "Event" }
-          ],
-          projects: [
-            {
-              id: "PROJ_001",
-              title: "《Dual Horizon》",
-              genre: "第三人称3D解谜冒险",
-              engine: "Unity",
-              role: "主策-系统/关卡策划",
-              image: "https://github.com/user-attachments/assets/dbcfca8d-a2eb-4b7b-b18a-98bef06541af",
-              description: "2025年TGJ参赛作品，侧重于重力切换与空间解谜的独立游戏原型",
-              contributions: [
-                "空间叠加：外部世界是一片废墟，而内部世界则是一个被淹没的水下领域。在视觉上和物理规则上形成鲜明对比。",
-                "重力差异：通过不同空间的重力差异设计玩法机制，并将机制进行组合，创造出更多的趣味性玩法，围绕合作与互补设计",
-              ],
-              details: {
-                video: `<iframe src="//player.bilibili.com/player.html?isOutside=true&aid=116335027750428&bvid=BV1GX9FBxEkR&cid=37178575687&p=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"></iframe>`, 
-                longText: "作为一款参加TGJ的作品，我们在5天内完成了核心循环的设计和3个大关卡的。玩家在两个重叠的世界中穿梭去利用不同的重力和物理规则来解决谜题，外世界是一个有着正常重力的坚固废墟，而内世界则是一个沉浸在半透明金色水体中的低重力空间。通过实时切换世界、操控物体以及组合动作，玩家将逐渐揭开艾瑟兰王国衰落与重生的故事。并借助温暖的艺术风格、柔和的音效设计以及循序渐进的故事叙述，营造出一种宁静、沉思的体验，让玩家在解谜的过程中感受到内心的平静，并体会到自我和解的可能性。",
-                images: [
-                  "https://github.com/user-attachments/assets/a5c1a4a5-8584-473c-a3c3-166e00221be9",
-                  "https://github.com/user-attachments/assets/10296524-31a8-4c73-b594-5baca0dd2a9d",
-                  "https://github.com/user-attachments/assets/07c9fa0d-0dbf-4bcf-96eb-bf992f141c29",
-                  "https://github.com/user-attachments/assets/b0da5cec-d9a7-44d2-81b1-ce6ef6bf8799"
-                ]
-              }
-            },
-            {
-              id: "PROJ_002",
-              title: "《诡梯》",
-              genre: "第一人称2D微恐视觉游戏",
-              engine: "Unity",
-              role: "主策-系统/关卡策划",
-              image: "https://github.com/user-attachments/assets/bfd84aaa-cdca-40da-b315-a628f78d065c",
-              description: "2026年GGJ参赛作品，偏生存类游戏，曾获Game Jam最佳玩法设计奖。",
-              contributions: [
-                "识别系统：通过有条件的识别道具来判断人与鬼之间的隐性差异，并在确认后进行驱散，提供奖惩机制反馈，帮助玩家确认操作是否成功。",
-                "电梯机制：构建无序停靠的电梯来营造玩家的混沌感，同时进入电梯的人群职业设计于社会争议事件群体，通过反差来隐性叙事讽刺人鬼身份。",
-              ],
-              details: {
-                video: `<iframe src="//player.bilibili.com/player.html?isOutside=true&aid=116335078018248&bvid=BV1D99FB9EkN&cid=37178967770&p=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"></iframe>`,  
-                longText: "作为一款参加上海市Global Game Jam的作品，我们在72小时内完成了核心循环的系统设计。使用了经典的『引入-强化-扭转-综合』的任天堂式关卡设计理念来把控单关卡节奏，小体量又不单调。为了保证迭代效率，我将可操作道具都封装成了可复用的Prefab变体。",
-                images: [
-                  "https://github.com/user-attachments/assets/daba718a-19bc-4ad1-8319-a6622dd49081",
-                  "https://github.com/user-attachments/assets/0314c6c7-cb37-42d0-a9f2-74706b453bbf",
-                  "https://github.com/user-attachments/assets/8eefa376-3663-4fd5-be9f-b48d9af0b05c",
-                  "https://github.com/user-attachments/assets/f1b9af88-6efc-480c-a245-a882d6dd627b"
-                ]
-              }
-            },
-            {
-              id: "PROJ_003",
-              title: "《边界·消融》",
-              genre: "VR剧情向沉浸式角色扮演游戏",
-              engine: "Unity",
-              role: "全流程",
-              image: "https://github.com/user-attachments/assets/82e7c634-cff6-493b-b688-7e70af9c88d7",
-              description: "2025年4月-8月个人VR游戏作品，收录于2025年7月《装饰》杂志。",
-              contributions: [
-                "感知设计：通过VR特性体验，获取视、听、触多感官结合的自然感知，实现具身认知达到心流沉浸。",
-                "行为设计：采用轻量化交互以控制VR学习成本，插入AI大语言模型实时引导玩家行为、解答问题，通过“收集—获取—反馈”的交互闭环推动叙事发展。",
-              ],
-              details: {
-                video: `<iframe src="//player.bilibili.com/player.html?isOutside=true&aid=116249849826374&bvid=BV1pPwqzAEH3&cid=36791454506&p=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"></iframe>`,
-                longText: "作为校内课程独立游戏，我策划并制作了一款基于未来科幻背景的体验模拟器，专注于场景氛围与叙事流程的耦合构建。主要流程使用ProBuilder搭建了所有4个关卡的白盒，通过OpenXR和XRit完成了核心交互机制，并独立完成C#逻辑编写及基础粒子特效制作。此外，我还构建了AI Agent智能体，接入了火山引擎的AI大模型API，集成到游戏中用于实时引导玩家操作，并提供语音对话解答问题。经过多轮测试，AI幻觉率可控，未出现明显偏差。",
-                images: [
-                  "https://github.com/user-attachments/assets/36718ae5-1b3b-4e04-a06c-1071dc17eff7",
-                  "https://github.com/user-attachments/assets/ba01bc75-36dc-430f-a41f-446b53eafcda",
-                  "https://github.com/user-attachments/assets/5ecb7a03-faf0-4244-bad1-2129929d3289",
-                  "https://github.com/user-attachments/assets/15b83b31-ca9c-499c-9f8b-3ae678e06e37"
-                ]
-              }
-            },
-            {
-              id: "PROJ_004",
-              title: "《繁花盛于 旧时里弄》",
-              genre: "趣味性交互式网站",
-              engine: "Unity",
-              role: "全流程",
-              image: "https://github.com/user-attachments/assets/f1f12044-d0e9-41ae-b05e-d6ff18c3b699",
-              description: "2025年1-5月个人网站作品，获IEEEPacificVis国际金奖，展出于日本东京庆应义塾大学",
-              contributions: [
-                "严肃游戏：采用趣味性交互于网页端对上海石库门文化从人文、里弄、建筑等维度进行宣传。",
-                "实事调研：实地与书本调研数据，通过Excel完成数据清洗、整合与可视化分析，将其转化为网站内容。",
-              ],
-              details: {
-                video: `<iframe src="//player.bilibili.com/player.html?isOutside=true&aid=116335698774586&bvid=BV1fC9wBuEVi&cid=37182639278&p=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"></iframe>`,
-                longText: "策划并实现了一个科普意义的趣味性交互网站，聚焦上海石库门的建筑记忆与城市变迁。系统采集了里弄生活的声音、图像与口述史料，融合艺术化信息图表与可交互数据叙事——用户可点击对比不同年代的建筑形态、人口密度与空间演变；同时嵌入生活化情节与声音情感引擎，跟随虚拟住户的脚步，在天井、客堂间与灶披间中触发叫卖声、沪剧片段与邻里闲聊，形成沉浸式听觉体验。整个项目以Unity开发并发布为WebGL交互页面，兼顾严肃游戏的任务机制与纪录片的细腻温度，旨在让更多人看见石库门逐渐消逝的美，从一砖一瓦的百年兴衰中直观感知上海乃至世界的变迁。",
-                images: [
-                  "https://github.com/user-attachments/assets/0596099e-656e-4d14-b25b-ec2b721fbc42",
-                  "https://github.com/user-attachments/assets/08c17ca3-5fe4-474b-b257-fe7adb62a05a",
-                  "https://github.com/user-attachments/assets/4fd65f0b-7746-4155-8135-e3526797e543",
-                  "https://github.com/user-attachments/assets/63702d4f-cec6-4e03-bc26-9f937e393bcf"
-                ]
-              }
-            }
-          ],
-          education: [
-            {
-              degree: "数字媒体艺术 学士",
-              school: "江南大学",
-              year: "2021 - 2025",
-              details: "主修游戏引擎原理、数据信息可视化、跨平台交互设计-数字娱乐等。3年期间制作个人游戏7个，毕业设计为一款基于Unity和OpenXR开发的VR解谜游戏原型。"
-            },
-            {
-              degree: "交互设计 硕士",
-              school: "同济大学",
-              year: "2025 - 至今",
-              details: "专注于玩家心流模型、沉浸式叙事研究与用户交互设计，期间参与多次Game Jam并担任主策。"
-            }
-          ],
-          academic_records: "以专业第一的成绩获校长特别奖，保研期间获同济大学和清华大学等多所985高校offer，研一课程均分95。设计竞赛获国际奖项2个、国家级奖项3个、省级奖项21个，奖学金累计5w余元。",
-          internships: [
-            {
-              title: "系统策划实习生",
-              company: "叠纸—X6项目组（无限暖暖项目组）",
-              year: "2024.10 - 2025.03",
-              details: "参与《无限暖暖》的大世界系统开发。负责配置和校验游戏内的道具掉落表，独立策划与配置了1.2、1.3、1.5版本肝活与特定游戏任务《寻找史丢丢》，特定任务广受好评后成为不定期返场玩法。并协助主策完成版本迭代的设计文档整理。"
-            }
-          ],
-          gaming_insight: "作为一名杂食性硬核玩家，我相信'量变引起质变'。桌游、主机、PC、手游超过三千小时的各类游戏体验，让我习惯于带着『为什么好玩』的疑问去解构每一个核心循环。我不仅体验沉浸感，更致力于拆解构成这种沉浸感的系统齿轮与关卡骨架。",
-          gaming: [
-            { name: "燕云十六声", hours: "300+", tags: ["Action RPG", "Level Design"], remark: "深入拆解了其天宫地窟的箱庭连接与暗线引导设计，并进行仿照搭建白盒测试。" },
-            { name: "模拟人生4", hours: "1000+", tags: ["FPS RPG", "Narrative"], remark: "研究了其任务网状结构与系统的迭代，并自己制作了多款Mod以深化游戏体验。" },
-            { name: "刺客信条多系列", hours: "500+", tags: ["Metroidvania", "Pacing"], remark: "全多周目通关，极其克制且精准的动作帧设计，绝佳的大地图探索节奏。" },
-            { name: "塞尔达传说王国之泪", hours: "200+", tags: ["Simulation", "System Design"], remark: "二周目探索中，深入拆解了其物理引擎系统所构建的多个趣味玩法组合。" }
-          ]
-        };
+// --- 组件 ---
 
-        // --- 主组件 ---
-        function PortfolioApp() {
-          const [achievementUnlocked, setAchievementUnlocked] = useState(false);
-          const [selectedProject, setSelectedProject] = useState(null);
-          const [isCopied, setIsCopied] = useState(false);
-          const contactRef = useRef(null);
+export default function PortfolioApp() {
+  const [achievementUnlocked, setAchievementUnlocked] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [isCopied, setIsCopied] = useState(false);
+  const contactRef = useRef(null);
 
-          useEffect(() => {
-            const observer = new IntersectionObserver(
-              (entries) => {
-                if (entries[0].isIntersecting && !achievementUnlocked) {
-                  setAchievementUnlocked(true);
-                  setTimeout(() => setAchievementUnlocked(false), 4000);
-                }
-              },
-              { threshold: 0.5 }
-            );
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !achievementUnlocked) {
+          setAchievementUnlocked(true);
+          setTimeout(() => setAchievementUnlocked(false), 4000);
+        }
+      },
+      { threshold: 0.5 }
+    );
 
-            if (contactRef.current) {
-              observer.observe(contactRef.current);
-            }
+    if (contactRef.current) {
+      observer.observe(contactRef.current);
+    }
 
-            return () => {
-              if (contactRef.current) observer.unobserve(contactRef.current);
-            };
-          }, [achievementUnlocked]);
+    return () => {
+      if (contactRef.current) observer.unobserve(contactRef.current);
+    };
+  }, [achievementUnlocked]);
 
-          useEffect(() => {
-            if (selectedProject) {
-              document.body.style.overflow = 'hidden';
-            } else {
-              document.body.style.overflow = 'unset';
-            }
-            return () => { document.body.style.overflow = 'unset'; }
-          }, [selectedProject]);
+  // 当弹窗打开时禁止底层滚动
+  useEffect(() => {
+    if (selectedProject) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => { document.body.style.overflow = 'unset'; }
+  }, [selectedProject]);
 
-          const scrollToSection = (id) => {
-            const element = document.getElementById(id);
-            if (element) {
-              element.scrollIntoView({ behavior: 'smooth' });
-            }
-          };
+  const scrollToSection = (id) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
-          const handleCopyEmail = () => {
-            const textArea = document.createElement("textarea");
-            textArea.value = PORTFOLIO_DATA.contact.email;
-            document.body.appendChild(textArea);
-            textArea.select();
-            try {
-              document.execCommand('copy');
-              setIsCopied(true);
-              setTimeout(() => setIsCopied(false), 2000);
-            } catch (err) {
-              console.error('Failed to copy', err);
-            }
-            document.body.removeChild(textArea);
-          };
+  const handleCopyEmail = () => {
+    const textArea = document.createElement("textarea");
+    textArea.value = PORTFOLIO_DATA.contact.email;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy', err);
+    }
+    document.body.removeChild(textArea);
+  };
 
-          const renderVideo = (videoString) => {
-            if (!videoString) return null;
-            if (videoString.trim().startsWith('<iframe')) {
-              const safeHtml = videoString.replace(/src="\/\//g, 'src="https://');
-              return (
-                <div 
-                  className="w-full h-full relative [&>iframe]:absolute [&>iframe]:top-0 [&>iframe]:left-0 [&>iframe]:w-full [&>iframe]:h-full"
-                  dangerouslySetInnerHTML={{ __html: safeHtml }}
-                />
-              );
-            }
-            return (
-              <iframe 
-                src={videoString} 
-                className="w-full h-full absolute top-0 left-0" 
-                frameBorder="0" 
-                scrolling="no"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                allowFullScreen
-                title="gameplay video"
-              ></iframe>
-            );
-          };
+  // 处理嵌入代码的安全渲染，自动将 // 替换为 https://
+  const renderVideo = (videoString) => {
+    if (!videoString) return null;
+    
+    // 判断是否为 iframe 嵌入代码
+    if (videoString.trim().startsWith('<iframe')) {
+      // 强制替换 B站 或其他平台默认省略的协议头部，否则沙盒环境下会加载失败黑屏
+      const safeHtml = videoString.replace(/src="\/\//g, 'src="https://');
+      
+      return (
+        <div 
+          className="w-full h-full relative [&>iframe]:absolute [&>iframe]:top-0 [&>iframe]:left-0 [&>iframe]:w-full [&>iframe]:h-full"
+          dangerouslySetInnerHTML={{ __html: safeHtml }}
+        />
+      );
+    }
 
-          return (
-            <div className="min-h-screen bg-[#0a0a0c] text-slate-300 font-sans selection:bg-[#00f0ff] selection:text-black relative overflow-x-hidden">
-              <div 
-                className="fixed inset-0 pointer-events-none z-0 opacity-20"
-                style={{
-                  backgroundImage: `linear-gradient(to right, #1e293b 1px, transparent 1px), linear-gradient(to bottom, #1e293b 1px, transparent 1px)`,
-                  backgroundSize: '40px 40px'
-                }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0a0a0c]/50 to-[#0a0a0c]"></div>
+    // 如果只是普通的视频链接 url
+    return (
+      <iframe 
+        src={videoString} 
+        className="w-full h-full absolute top-0 left-0" 
+        frameBorder="0" 
+        scrolling="no"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+        allowFullScreen
+        title="gameplay video"
+      ></iframe>
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-[#0a0a0c] text-slate-300 font-sans selection:bg-[#00f0ff] selection:text-black relative overflow-x-hidden">
+      
+      {/* 引擎网格背景 */}
+      <div 
+        className="fixed inset-0 pointer-events-none z-0 opacity-20"
+        style={{
+          backgroundImage: `
+            linear-gradient(to right, #1e293b 1px, transparent 1px),
+            linear-gradient(to bottom, #1e293b 1px, transparent 1px)
+          `,
+          backgroundSize: '40px 40px'
+        }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0a0a0c]/50 to-[#0a0a0c]"></div>
+      </div>
+
+      {/* 顶部导航 */}
+      <nav className="fixed top-0 w-full z-40 bg-[#0f1115] border-b border-slate-800 flex items-center shadow-lg font-mono text-xs">
+        <div className="flex items-center gap-2 px-4 py-2 border-r border-slate-800 text-[#00f0ff]">
+          <Icon name="Gamepad2" size={16} />
+          <span className="font-bold tracking-wider">PORTFOLIO_EDITOR</span>
+        </div>
+        <div className="hidden md:flex">
+          {['File', 'Edit', 'View', 'Window', 'Help'].map((item) => (
+            <div key={item} className="px-4 py-2 text-slate-500 hover:text-slate-200 hover:bg-slate-800 cursor-pointer transition-colors">
+              {item}
+            </div>
+          ))}
+        </div>
+        <div className="ml-auto flex border-l border-slate-800 overflow-x-auto whitespace-nowrap">
+          <button onClick={() => scrollToSection('home')} className="px-4 py-2 hover:bg-slate-800 hover:text-[#00f0ff] transition-colors">Viewport</button>
+          <button onClick={() => scrollToSection('skills')} className="px-4 py-2 hover:bg-slate-800 hover:text-[#00f0ff] transition-colors">Inspector</button>
+          <button onClick={() => scrollToSection('projects')} className="px-4 py-2 hover:bg-slate-800 hover:text-[#00f0ff] transition-colors">Content</button>
+          <button onClick={() => scrollToSection('contact')} className="px-4 py-2 hover:bg-slate-800 hover:text-[#00f0ff] transition-colors">Terminal</button>
+        </div>
+      </nav>
+
+      <main className="pt-12 relative z-10">
+        
+        {/* Hero Section */}
+        <section id="home" className="min-h-[90vh] flex flex-col justify-center items-center relative px-4 md:px-6">
+          <div className="absolute top-20 right-10 flex flex-col items-center gap-1 opacity-40 hidden md:flex">
+            <div className="w-0.5 h-12 bg-red-500 relative"><span className="absolute -top-4 left-1 text-red-500 font-mono text-xs">Z</span></div>
+            <div className="flex items-center">
+              <div className="w-12 h-0.5 bg-green-500 relative"><span className="absolute -right-4 -top-2 text-green-500 font-mono text-xs">Y</span></div>
+              <div className="w-12 h-0.5 bg-blue-500 rotate-45 transform origin-left relative"><span className="absolute right-0 -bottom-4 text-blue-500 font-mono text-xs">X</span></div>
+            </div>
+          </div>
+
+          <div className="relative bg-[#151921] border border-slate-700 rounded-lg shadow-2xl w-full max-w-3xl backdrop-blur-sm">
+            <div className="bg-gradient-to-r from-blue-900/40 to-slate-800/40 px-4 py-2 border-b border-slate-700 flex justify-between items-center rounded-t-lg">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-blue-500 shadow-[0_0_8px_#3b82f6]"></div>
+                <span className="font-mono text-sm text-slate-200 font-bold">Event BeginPlay</span>
               </div>
+              <span className="font-mono text-xs text-slate-500">Node ID: ROOT_01</span>
+            </div>
+            
+            <div className="p-6 md:p-12 relative flex flex-col md:flex-row">
+              <div className="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 bg-slate-800 border-2 border-slate-500 rounded-full"></div>
+              
+              <div className="w-full">
+                {/* 修改：将名字和头像包裹在一个 Flex 容器中左右对齐 */}
+                <div className="flex flex-row items-center justify-between gap-4 md:gap-6 mb-6 md:mb-8">
+                  <div>
+                    <div className="font-mono text-[#00f0ff] text-sm mb-4 bg-[#00f0ff]/10 inline-block px-2 py-1 border border-[#00f0ff]/30 rounded">
+                      Class: {PORTFOLIO_DATA.class}
+                    </div>
+                    <h1 className="text-4xl md:text-7xl font-black text-white mb-2 tracking-tight">
+                      {PORTFOLIO_DATA.name}
+                    </h1>
+                    <h2 className="text-lg md:text-2xl font-mono text-slate-400 flex items-center gap-2">
+                      <span className="text-slate-600">{"<"}</span>
+                      {PORTFOLIO_DATA.title}
+                      <span className="text-slate-600">{"/>"}</span>
+                    </h2>
+                  </div>
 
-              <nav className="fixed top-0 w-full z-40 bg-[#0f1115] border-b border-slate-800 flex items-center shadow-lg font-mono text-xs">
-                <div className="flex items-center gap-2 px-4 py-2 border-r border-slate-800 text-[#00f0ff]">
-                  <Icon name="Gamepad2" size={16} />
-                  <span className="font-bold tracking-wider">PORTFOLIO_EDITOR</span>
+                  {/* 新增：头像/角色资产框 (尺寸已放大) */}
+                  <div className="relative w-24 h-24 md:w-44 md:h-44 flex-shrink-0 group">
+                    {/* 发光背景底座 */}
+                    <div className="absolute inset-0 bg-[#00f0ff]/10 rounded shadow-[0_0_15px_#00f0ff] blur-sm group-hover:bg-[#00f0ff]/30 group-hover:blur-md transition-all duration-500"></div>
+                    {/* 图片主体 */}
+                    <div className="relative w-full h-full bg-[#0a0a0c] border border-slate-600 p-1.5 rounded z-10 overflow-hidden">
+                      <img 
+                        src={PORTFOLIO_DATA.avatar} 
+                        alt="Profile" 
+                        className="w-full h-full object-cover rounded-sm grayscale-[25%] group-hover:grayscale-0 transition-all duration-500"
+                      />
+                    </div>
+                    {/* 引擎UI边角装饰 (按比例增大了一点) */}
+                    <div className="absolute -top-1 -left-1 w-4 h-4 border-t-2 border-l-2 border-[#00f0ff] z-20"></div>
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 border-b-2 border-r-2 border-[#00f0ff] z-20"></div>
+                  </div>
                 </div>
-                <div className="hidden md:flex">
-                  {['File', 'Edit', 'View', 'Window', 'Help'].map((item) => (
-                    <div key={item} className="px-4 py-2 text-slate-500 hover:text-slate-200 hover:bg-slate-800 cursor-pointer transition-colors">
-                      {item}
-                    </div>
-                  ))}
+
+                <div className="bg-black/30 p-4 border-l-2 border-amber-500 rounded-r text-slate-400 mb-8 font-mono text-xs md:text-sm">
+                  <span className="text-amber-500">{"// Comment:"}</span><br/>
+                  {PORTFOLIO_DATA.slogan}
                 </div>
-                <div className="ml-auto flex border-l border-slate-800 overflow-x-auto whitespace-nowrap">
-                  <button onClick={() => scrollToSection('home')} className="px-4 py-2 hover:bg-slate-800 hover:text-[#00f0ff] transition-colors">Viewport</button>
-                  <button onClick={() => scrollToSection('skills')} className="px-4 py-2 hover:bg-slate-800 hover:text-[#00f0ff] transition-colors">Inspector</button>
-                  <button onClick={() => scrollToSection('projects')} className="px-4 py-2 hover:bg-slate-800 hover:text-[#00f0ff] transition-colors">Content</button>
-                  <button onClick={() => scrollToSection('contact')} className="px-4 py-2 hover:bg-slate-800 hover:text-[#00f0ff] transition-colors">Terminal</button>
-                </div>
-              </nav>
-
-              <main className="pt-12 relative z-10">
-                <section id="home" className="min-h-[90vh] flex flex-col justify-center items-center relative px-4 md:px-6">
-                  <div className="absolute top-20 right-10 flex flex-col items-center gap-1 opacity-40 hidden md:flex">
-                    <div className="w-0.5 h-12 bg-red-500 relative"><span className="absolute -top-4 left-1 text-red-500 font-mono text-xs">Z</span></div>
-                    <div className="flex items-center">
-                      <div className="w-12 h-0.5 bg-green-500 relative"><span className="absolute -right-4 -top-2 text-green-500 font-mono text-xs">Y</span></div>
-                      <div className="w-12 h-0.5 bg-blue-500 rotate-45 transform origin-left relative"><span className="absolute right-0 -bottom-4 text-blue-500 font-mono text-xs">X</span></div>
-                    </div>
-                  </div>
-
-                  <div className="relative bg-[#151921] border border-slate-700 rounded-lg shadow-2xl w-full max-w-3xl backdrop-blur-sm">
-                    <div className="bg-gradient-to-r from-blue-900/40 to-slate-800/40 px-4 py-2 border-b border-slate-700 flex justify-between items-center rounded-t-lg">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-blue-500 shadow-[0_0_8px_#3b82f6]"></div>
-                        <span className="font-mono text-sm text-slate-200 font-bold">Event BeginPlay</span>
-                      </div>
-                      <span className="font-mono text-xs text-slate-500">Node ID: ROOT_01</span>
-                    </div>
-                    
-                    <div className="p-6 md:p-12 relative flex flex-col md:flex-row">
-                      <div className="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 bg-slate-800 border-2 border-slate-500 rounded-full"></div>
-                      
-                      <div className="w-full">
-                        <div className="flex flex-row items-center justify-between gap-4 md:gap-6 mb-6 md:mb-8">
-                          <div>
-                            <div className="font-mono text-[#00f0ff] text-sm mb-4 bg-[#00f0ff]/10 inline-block px-2 py-1 border border-[#00f0ff]/30 rounded">
-                              Class: {PORTFOLIO_DATA.class}
-                            </div>
-                            <h1 className="text-4xl md:text-7xl font-black text-white mb-2 tracking-tight">
-                              {PORTFOLIO_DATA.name}
-                            </h1>
-                            <h2 className="text-lg md:text-2xl font-mono text-slate-400 flex items-center gap-2">
-                              <span className="text-slate-600">{"<"}</span>
-                              {PORTFOLIO_DATA.title}
-                              <span className="text-slate-600">{"/>"}</span>
-                            </h2>
-                          </div>
-
-                          <div className="relative w-24 h-24 md:w-44 md:h-44 flex-shrink-0 group">
-                            <div className="absolute inset-0 bg-[#00f0ff]/10 rounded shadow-[0_0_15px_#00f0ff] blur-sm group-hover:bg-[#00f0ff]/30 group-hover:blur-md transition-all duration-500"></div>
-                            <div className="relative w-full h-full bg-[#0a0a0c] border border-slate-600 p-1.5 rounded z-10 overflow-hidden">
-                              <img 
-                                src={PORTFOLIO_DATA.avatar} 
-                                alt="Profile" 
-                                className="w-full h-full object-cover rounded-sm grayscale-[25%] group-hover:grayscale-0 transition-all duration-500"
-                              />
-                            </div>
-                            <div className="absolute -top-1 -left-1 w-4 h-4 border-t-2 border-l-2 border-[#00f0ff] z-20"></div>
-                            <div className="absolute -bottom-1 -right-1 w-4 h-4 border-b-2 border-r-2 border-[#00f0ff] z-20"></div>
-                          </div>
-                        </div>
-
-                        <div className="bg-black/30 p-4 border-l-2 border-amber-500 rounded-r text-slate-400 mb-8 font-mono text-xs md:text-sm">
-                          <span className="text-amber-500">{"// Comment:"}</span><br/>
-                          {PORTFOLIO_DATA.slogan}
-                        </div>
-                        
-                        <div className="flex flex-col gap-4">
-                          <div className="flex items-center justify-between group">
-                            <span className="font-mono text-xs md:text-sm text-slate-300 truncate mr-2">
-                              Execute_Logic(<span className="text-green-400">"{PORTFOLIO_DATA.contact.phone}"</span>)
-                            </span>
-                            <div className="flex items-center w-1/3 md:w-1/2">
-                              <div className="h-px bg-slate-700 group-hover:bg-[#00f0ff] flex-1 transition-colors"></div>
-                              <button 
-                                onClick={() => scrollToSection('projects')}
-                                className="w-4 h-4 flex-shrink-0 bg-[#00f0ff] rounded-full shadow-[0_0_10px_#00f0ff] cursor-pointer hover:scale-150 transition-transform"
-                                title="View Projects"
-                              ></button>
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between group">
-                            <span className="font-mono text-xs md:text-sm text-slate-300 truncate mr-2">
-                              Contact_Target(<span className="text-green-400">"{PORTFOLIO_DATA.contact.email}"</span>)
-                            </span>
-                            <div className="flex items-center w-1/3 md:w-1/2">
-                              <div className="h-px bg-slate-700 group-hover:bg-amber-400 flex-1 transition-colors"></div>
-                              <button 
-                                onClick={() => scrollToSection('contact')}
-                                className="w-4 h-4 flex-shrink-0 bg-amber-400 rounded-full shadow-[0_0_10px_#fbbf24] cursor-pointer hover:scale-150 transition-transform"
-                                title="Contact Me"
-                              ></button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="absolute bottom-10 animate-pulse text-slate-600 cursor-pointer hidden md:block" onClick={() => scrollToSection('skills')}>
-                    <Icon name="ChevronDown" size={32} />
-                  </div>
-                </section>
-
-                <section id="skills" className="py-16 md:py-24 relative border-y border-slate-800 bg-[#0f1115]/80 backdrop-blur-md">
-                  <div className="max-w-7xl mx-auto px-4 md:px-6 grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12">
-                    <div className="lg:col-span-5">
-                      <div className="bg-[#1a1f29] border border-slate-700 rounded shadow-xl overflow-hidden font-mono flex flex-col h-full">
-                        <div className="bg-slate-800 px-3 py-1.5 text-xs text-slate-300 flex items-center justify-between border-b border-slate-700">
-                          <span className="flex items-center gap-2 font-bold"><Icon name="Settings2" size={14}/> Inspector</span>
-                          <span className="text-slate-500">Designer_BP</span>
-                        </div>
-                        
-                        <div className="p-4 md:p-5 border-b border-slate-700/50">
-                          <div className="text-xs text-slate-400 mb-3 font-bold flex items-center gap-1">
-                            <Icon name="ChevronDown" size={14} /> Transform (Location)
-                          </div>
-                          <div className="grid grid-cols-3 gap-2 text-xs">
-                            <div className="bg-[#0a0a0c] p-1.5 border border-slate-700 flex rounded"><span className="text-red-500 px-1">X</span><span className="text-slate-300 text-center flex-1">ShangHai</span></div>
-                            <div className="bg-[#0a0a0c] p-1.5 border border-slate-700 flex rounded"><span className="text-green-500 px-1">Y</span><span className="text-slate-300 text-center flex-1">Tongji</span></div>
-                            <div className="bg-[#0a0a0c] p-1.5 border border-slate-700 flex rounded"><span className="text-blue-500 px-1">Z</span><span className="text-slate-300 text-center flex-1">CN</span></div>
-                          </div>
-                        </div>
-
-                        <div id="education" className="p-4 md:p-5 flex-1 bg-[#151921]/30">
-                          <div className="text-xs text-green-400 mb-4 font-bold flex items-center gap-1">
-                            <Icon name="ChevronDown" size={14} /> System/Build_Logs (Education)
-                          </div>
-
-                          <div className="mb-5 bg-[#0a0a0c] border border-slate-800 border-l-2 border-l-green-500 p-3 rounded group hover:border-green-500/50 transition-colors shadow-inner">
-                            <div className="flex items-center gap-2 text-[10px] text-slate-500 mb-1.5 font-mono">
-                              <span className="w-1.5 h-1.5 rounded-full bg-green-400"></span>
-                              String Academic_Status = 
-                            </div>
-                            <div className="text-green-300 text-xs font-mono leading-relaxed text-justify">
-                              "{PORTFOLIO_DATA.academic_records}"
-                            </div>
-                          </div>
-
-                          <div className="relative border-l border-slate-700 ml-2 space-y-6">
-                            {PORTFOLIO_DATA.education.map((edu, index) => (
-                              <div key={index} className="relative pl-6 group">
-                                <div className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e] group-hover:scale-150 transition-transform"></div>
-                                <div className="bg-[#0a0a0c] border border-slate-700 p-4 rounded group-hover:border-green-500/50 transition-colors">
-                                  <div className="flex flex-col gap-1 mb-2">
-                                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                                      <Icon name="GraduationCap" size={14} className="text-green-400" />
-                                      {edu.degree}
-                                    </h3>
-                                    <div className="flex flex-wrap items-center justify-between gap-1">
-                                      <span className="text-green-400/80 text-xs font-bold">@ {edu.school}</span>
-                                      <span className="px-1.5 py-0.5 bg-[#1a1f29] border border-slate-700 text-[10px] text-slate-400 rounded">
-                                        {edu.year}
-                                      </span>
-                                    </div>
-                                  </div>
-                                  <p className="text-xs text-slate-400 leading-relaxed font-sans">
-                                    {edu.details}
-                                  </p>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="p-4 md:p-5 flex-1 bg-[#151921]/30 border-t border-slate-700/50">
-                          <div className="text-xs text-blue-400 mb-4 font-bold flex items-center gap-1">
-                            <Icon name="ChevronDown" size={14} /> System/Process_Logs (Internship)
-                          </div>
-                          <div className="relative border-l border-slate-700 ml-2 space-y-6">
-                            {PORTFOLIO_DATA.internships.map((intern, index) => (
-                              <div key={index} className="relative pl-6 group">
-                                <div className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_#3b82f6] group-hover:scale-150 transition-transform"></div>
-                                <div className="bg-[#0a0a0c] border border-slate-700 p-4 rounded group-hover:border-blue-500/50 transition-colors">
-                                  <div className="flex flex-col gap-1 mb-2">
-                                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                                      <Icon name="Briefcase" size={14} className="text-blue-400" />
-                                      {intern.title}
-                                    </h3>
-                                    <div className="flex flex-wrap items-center justify-between gap-1">
-                                      <span className="text-blue-400/80 text-xs font-bold">@ {intern.company}</span>
-                                      <span className="px-1.5 py-0.5 bg-[#1a1f29] border border-slate-700 text-[10px] text-slate-400 rounded">
-                                        {intern.year}
-                                      </span>
-                                    </div>
-                                  </div>
-                                  <p className="text-xs text-slate-400 leading-relaxed font-sans">
-                                    {intern.details}
-                                  </p>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="lg:col-span-7">
-                      <div className="bg-[#1a1f29] border border-slate-700 rounded shadow-xl overflow-hidden font-mono flex flex-col h-full">
-                        <div className="bg-slate-800 px-3 py-1.5 text-xs text-slate-300 flex items-center justify-between border-b border-slate-700">
-                          <span className="flex items-center gap-2 font-bold"><Icon name="Box" size={14}/> Data Asset</span>
-                          <span className="text-slate-500">Database</span>
-                        </div>
-                        
-                        <div className="p-4 md:p-5 border-b border-slate-700/50">
-                          <div className="text-xs text-slate-400 mb-5 font-bold flex items-center gap-1">
-                            <Icon name="ChevronDown" size={14} /> Variables (Skills)
-                          </div>
-                          <div className="flex flex-col gap-5">
-                            {PORTFOLIO_DATA.skills.map((skill, index) => (
-                              <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-3 group">
-                                <div className="w-full sm:w-40 flex items-center gap-2 text-sm text-slate-300">
-                                  <span className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                                    skill.type === 'Float' ? 'bg-green-400' : 
-                                    skill.type === 'Vector3' ? 'bg-amber-400' : 
-                                    skill.type === 'String' ? 'bg-purple-400' : 'bg-red-400'
-                                  }`}></span>
-                                  <span className="truncate">{skill.name}</span>
-                                </div>
-                                <div className="flex-1 flex items-center gap-3">
-                                  <div className="flex-1 h-3.5 bg-[#0a0a0c] rounded-sm border border-slate-700 relative overflow-hidden group-hover:border-slate-500 transition-colors">
-                                    <div 
-                                      className="h-full bg-slate-600 group-hover:bg-[#00f0ff] transition-colors relative"
-                                      style={{ width: `${skill.level}%` }}
-                                    >
-                                      <div className="absolute right-0 top-0 bottom-0 w-1 bg-white opacity-50"></div>
-                                    </div>
-                                  </div>
-                                  <div className="w-12 bg-[#0a0a0c] border border-slate-700 text-slate-300 text-xs text-center py-1 rounded cursor-ns-resize hover:border-[#00f0ff] transition-colors flex-shrink-0">
-                                    {skill.level}.0
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div id="gaming" className="p-4 md:p-5 flex-1 bg-[#151921]/30">
-                          <div className="text-xs text-purple-400 mb-4 font-bold flex items-center gap-1">
-                            <Icon name="ChevronDown" size={14} /> Database/Playtest_Records
-                          </div>
-
-                          <div className="mb-5 bg-[#0a0a0c] border border-slate-800 border-l-2 border-l-purple-500 p-3 rounded group hover:border-purple-500/50 transition-colors shadow-inner">
-                            <div className="flex items-center gap-2 text-[10px] text-slate-500 mb-1.5 font-mono">
-                              <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
-                              String Core_Philosophy = 
-                            </div>
-                            <div className="text-purple-300 text-xs font-mono leading-relaxed text-justify">
-                              "{PORTFOLIO_DATA.gaming_insight}"
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {PORTFOLIO_DATA.gaming.map((game, index) => (
-                              <div key={index} className="bg-[#0a0a0c] border border-slate-800 rounded p-4 hover:border-purple-500/50 transition-all flex flex-col group shadow-lg">
-                                <div className="flex justify-between items-start mb-3 gap-2">
-                                  <h3 className="text-sm font-bold text-slate-200 group-hover:text-purple-400 transition-colors flex items-center gap-2">
-                                    <Icon name="Gamepad2" size={14} />
-                                    <span className="truncate">{game.name}</span>
-                                  </h3>
-                                  <div className="flex items-center gap-1 text-[10px] text-slate-500 bg-[#1a1f29] px-2 py-1 rounded border border-slate-800 whitespace-nowrap">
-                                    <Icon name="Clock" size={10} />
-                                    {game.hours}
-                                  </div>
-                                </div>
-                                
-                                <div className="flex flex-wrap gap-1.5 mb-3">
-                                  {game.tags.map((tag, i) => (
-                                    <span key={i} className="text-[9px] px-1.5 py-0.5 border border-slate-700 text-slate-400 rounded bg-[#151921]">
-                                      {tag}
-                                    </span>
-                                  ))}
-                                </div>
-                                
-                                <div className="mt-auto bg-[#1a1f29] p-2.5 rounded border-l-2 border-purple-500 text-xs text-slate-400 font-sans">
-                                  <span className="text-purple-500 font-mono text-[10px] mb-1 block">{"// Designer Note:"}</span>
-                                  {game.remark}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </section>
-
-                <section id="projects" className="py-16 md:py-24 px-4 md:px-6 relative bg-[#0a0a0c]">
-                  <div className="max-w-7xl mx-auto">
-                    <div className="flex items-center gap-2 font-mono text-sm text-slate-400 mb-8 bg-[#151921] border border-slate-800 p-2 rounded w-fit">
-                      <span className="text-slate-500">Content</span>
-                      <span>/</span>
-                      <span className="text-[#00f0ff]">Projects</span>
-                      <span>/</span>
-                    </div>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                      {PORTFOLIO_DATA.projects.map((project) => (
-                        <div key={project.id} className="group relative bg-[#151921] rounded overflow-hidden border border-slate-800 hover:border-[#00f0ff]/80 transition-all duration-300 flex flex-col font-mono shadow-lg hover:shadow-[0_0_20px_rgba(0,240,255,0.15)]">
-                          <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#00f0ff] opacity-0 group-hover:opacity-100 transition-opacity z-20"></div>
-                          <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-[#00f0ff] opacity-0 group-hover:opacity-100 transition-opacity z-20"></div>
-                          <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-[#00f0ff] opacity-0 group-hover:opacity-100 transition-opacity z-20"></div>
-                          <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#00f0ff] opacity-0 group-hover:opacity-100 transition-opacity z-20"></div>
-
-                          <div className="absolute top-3 right-3 z-20 bg-black/60 backdrop-blur px-2 py-1 text-[10px] text-[#00f0ff] border border-[#00f0ff]/30 rounded flex items-center gap-1">
-                            <Icon name="Code" size={10} />
-                            {project.engine}
-                          </div>
-
-                          <div className="h-56 overflow-hidden relative cursor-pointer" onClick={() => setSelectedProject(project)}>
-                            <div className="absolute inset-0 bg-gradient-to-t from-[#151921] to-transparent z-10"></div>
-                            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20 mix-blend-overlay z-10 pointer-events-none"></div>
-                            <img 
-                              src={project.image} 
-                              alt={project.title} 
-                              className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 grayscale-[30%] group-hover:grayscale-0"
-                            />
-                            <div className="absolute inset-0 z-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/40 backdrop-blur-[2px]">
-                               <div className="flex items-center gap-2 bg-[#00f0ff] text-black px-4 py-2 rounded font-bold text-sm tracking-wider">
-                                 <Icon name="Maximize2" size={16} /> INSPECT_ASSET()
-                               </div>
-                            </div>
-                          </div>
-
-                          <div className="p-5 md:p-6 flex-1 flex flex-col relative z-20 -mt-6">
-                            <div className="bg-[#0f1115] border border-slate-700 p-4 rounded shadow-lg mb-4 cursor-pointer hover:border-[#00f0ff]/50 transition-colors" onClick={() => setSelectedProject(project)}>
-                              <div className="flex justify-between items-baseline mb-1">
-                                <h3 className="text-xl font-bold text-white tracking-tight group-hover:text-[#00f0ff] transition-colors">
-                                  {project.title}
-                                </h3>
-                                <span className="text-[10px] text-slate-500">{project.id}</span>
-                              </div>
-                              <p className="text-xs text-amber-400 mb-2">{project.genre} | Role: {project.role}</p>
-                              <p className="text-slate-400 text-sm leading-relaxed font-sans line-clamp-2">
-                                {project.description}
-                              </p>
-                            </div>
-
-                            <div className="mb-6 flex-1">
-                              <div className="text-xs font-bold text-slate-500 mb-2 border-b border-slate-800 pb-1 flex items-center gap-2">
-                                <Icon name="Link2" size={12} /> CORE_LOGIC_CONTRIBUTIONS
-                              </div>
-                              <ul className="space-y-2 text-sm text-slate-300 font-sans">
-                                {project.contributions.map((item, i) => (
-                                  <li key={i} className="flex items-start gap-2">
-                                    <span className="text-[#00f0ff] mt-1 font-mono">{">"}</span>
-                                    {item}
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </section>
-
-                <section id="contact" ref={contactRef} className="py-24 md:py-32 bg-[#0a0a0c] border-t border-slate-800 relative font-mono">
-                  <div className="max-w-3xl mx-auto px-6 text-center relative z-10">
-                    <div className="inline-block p-4 rounded-full bg-slate-900 border border-slate-700 mb-6 text-slate-500">
-                      <Icon name="Terminal" size={32} />
-                    </div>
-                    <h2 className="text-2xl font-bold text-white mb-2">Init_Connection()</h2>
-                    <p className="text-slate-400 mb-8 text-sm font-sans max-w-xl mx-auto">
-                      正在寻找系统策划/关卡策划实习岗位。如果我的属性面板符合你们的项目需求，可点击下方编译请求连接。
-                    </p>
-                    
-                    <button 
-                      onClick={handleCopyEmail}
-                      className="group relative inline-flex items-center justify-center gap-2 px-8 py-3 bg-transparent text-[#00f0ff] font-bold text-sm overflow-hidden border border-[#00f0ff] rounded cursor-pointer transition-all active:scale-95"
-                    >
-                      <span className="absolute inset-0 bg-[#00f0ff] w-0 group-hover:w-full transition-all duration-300 ease-out z-0"></span>
-                      <Icon name={isCopied ? "Check" : "Mail"} size={16} className="relative z-10 group-hover:text-[#0a0a0c] transition-colors" />
-                      <span className="relative z-10 group-hover:text-[#0a0a0c] transition-colors uppercase tracking-wider">
-                        {isCopied ? "COPIED TO CLIPBOARD" : "EXECUTE COPY_EMAIL"}
-                      </span>
-                    </button>
-                  </div>
-                </section>
-              </main>
-
-              <footer className="py-2 px-4 border-t border-slate-800 bg-[#0f1115] text-slate-500 font-mono text-[10px] flex flex-col sm:flex-row justify-between items-center z-30 relative gap-2">
-                <div className="flex gap-4">
-                  <span>Output Log</span>
-                  <span className="text-green-500">Compile Complete (0 errors, 0 warnings)</span>
-                </div>
-                <span>© {new Date().getFullYear()} {PORTFOLIO_DATA.name} | React Engine</span>
-              </footer>
-
-              <div className={`fixed bottom-12 right-6 bg-[#1a1f29] border-l-4 border-amber-500 shadow-2xl p-4 font-mono transform transition-all duration-500 z-30 flex items-start gap-3 w-72 ${achievementUnlocked ? 'translate-x-0 opacity-100' : 'translate-x-[150%] opacity-0'}`}>
-                <Icon name="Trophy" size={20} className="text-amber-500 mt-1 flex-shrink-0" />
-                <div>
-                  <p className="text-amber-500 text-[10px] font-bold tracking-widest mb-1">系统_通知</p>
-                  <p className="text-slate-200 text-xs">成就已解锁：<br/><span className="text-white font-bold">"探索到底"</span></p>
-                  <p className="text-slate-500 text-[10px] mt-1 line-clamp-2">发现隐藏策划。欢迎各位联系...</p>
-                </div>
-              </div>
-
-              {selectedProject && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-6 md:p-10 font-mono animate-in fade-in duration-200">
-                  <div 
-                    className="absolute inset-0 bg-[#050505]/90 backdrop-blur-md cursor-pointer"
-                    onClick={() => setSelectedProject(null)}
-                  ></div>
-
-                  <div className="relative bg-[#0f1115] border border-slate-600 rounded-lg shadow-2xl w-full max-w-6xl h-full max-h-full md:max-h-[90vh] flex flex-col overflow-hidden z-10">
-                    <div className="flex justify-between items-center bg-slate-800 px-4 py-2 border-b border-slate-600 flex-shrink-0">
-                      <div className="flex items-center gap-3">
-                        <span className="flex gap-1.5 items-center text-[#00f0ff]">
-                          <Icon name="Terminal" size={16} />
-                        </span>
-                        <span className="text-xs text-slate-300 font-bold ml-2">Asset_Viewer.exe - [{selectedProject.id}]</span>
-                      </div>
+                
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center justify-between group">
+                    <span className="font-mono text-xs md:text-sm text-slate-300 truncate mr-2">
+                      Execute_Logic(<span className="text-green-400">"{PORTFOLIO_DATA.contact.phone}"</span>)
+                    </span>
+                    <div className="flex items-center w-1/3 md:w-1/2">
+                      <div className="h-px bg-slate-700 group-hover:bg-[#00f0ff] flex-1 transition-colors"></div>
                       <button 
-                        onClick={() => setSelectedProject(null)}
-                        className="text-slate-400 hover:text-white transition-colors p-1"
-                        title="Close"
-                      >
-                        <Icon name="X" size={18} />
-                      </button>
+                        onClick={() => scrollToSection('projects')}
+                        className="w-4 h-4 flex-shrink-0 bg-[#00f0ff] rounded-full shadow-[0_0_10px_#00f0ff] cursor-pointer hover:scale-150 transition-transform"
+                        title="View Projects"
+                      ></button>
                     </div>
+                  </div>
+                  <div className="flex items-center justify-between group">
+                    <span className="font-mono text-xs md:text-sm text-slate-300 truncate mr-2">
+                      Contact_Target(<span className="text-green-400">"{PORTFOLIO_DATA.contact.email}"</span>)
+                    </span>
+                    <div className="flex items-center w-1/3 md:w-1/2">
+                      <div className="h-px bg-slate-700 group-hover:bg-amber-400 flex-1 transition-colors"></div>
+                      <button 
+                        onClick={() => scrollToSection('contact')}
+                        className="w-4 h-4 flex-shrink-0 bg-amber-400 rounded-full shadow-[0_0_10px_#fbbf24] cursor-pointer hover:scale-150 transition-transform"
+                        title="Contact Me"
+                      ></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="absolute bottom-10 animate-pulse text-slate-600 cursor-pointer hidden md:block" onClick={() => scrollToSection('skills')}>
+            <Icon name="ChevronDown" size={32} />
+          </div>
+        </section>
 
-                    <div className="flex-1 overflow-y-auto overflow-x-hidden bg-[#0a0a0c] custom-scrollbar">
-                      <div className="p-5 md:p-8 lg:p-10">
-                        <div className="mb-8 border-b border-slate-800 pb-6">
-                          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-4">
-                            <div>
-                              <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-2">
-                                {selectedProject.title}
-                              </h2>
-                              <div className="flex flex-wrap items-center gap-3 text-sm">
-                                <span className="text-amber-400 font-bold">{selectedProject.genre}</span>
-                                <span className="text-slate-500">|</span>
-                                <span className="text-slate-300">Role: {selectedProject.role}</span>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2 bg-[#1a1f29] border border-slate-700 px-3 py-1.5 rounded text-[#00f0ff] text-xs">
-                              <Icon name="Code" size={14} />
-                              <span className="font-bold uppercase">Engine: {selectedProject.engine}</span>
+        {/* 面板区 (Inspector & Database) */}
+        <section id="skills" className="py-16 md:py-24 relative border-y border-slate-800 bg-[#0f1115]/80 backdrop-blur-md">
+          <div className="max-w-7xl mx-auto px-4 md:px-6 grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12">
+            
+            {/* 左侧面板：Inspector */}
+            <div className="lg:col-span-5">
+              <div className="bg-[#1a1f29] border border-slate-700 rounded shadow-xl overflow-hidden font-mono flex flex-col h-full">
+                <div className="bg-slate-800 px-3 py-1.5 text-xs text-slate-300 flex items-center justify-between border-b border-slate-700">
+                  <span className="flex items-center gap-2 font-bold"><Icon name="Settings2" size={14}/> Inspector</span>
+                  <span className="text-slate-500">Designer_BP</span>
+                </div>
+                
+                <div className="p-4 md:p-5 border-b border-slate-700/50">
+                  <div className="text-xs text-slate-400 mb-3 font-bold flex items-center gap-1">
+                    <Icon name="ChevronDown" size={14} /> Transform (Location)
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-xs">
+                    <div className="bg-[#0a0a0c] p-1.5 border border-slate-700 flex rounded"><span className="text-red-500 px-1">X</span><span className="text-slate-300 text-center flex-1">ShangHai</span></div>
+                    <div className="bg-[#0a0a0c] p-1.5 border border-slate-700 flex rounded"><span className="text-green-500 px-1">Y</span><span className="text-slate-300 text-center flex-1">Tongji</span></div>
+                    <div className="bg-[#0a0a0c] p-1.5 border border-slate-700 flex rounded"><span className="text-blue-500 px-1">Z</span><span className="text-slate-300 text-center flex-1">CN</span></div>
+                  </div>
+                </div>
+
+                <div id="education" className="p-4 md:p-5 flex-1 bg-[#151921]/30">
+                  <div className="text-xs text-green-400 mb-4 font-bold flex items-center gap-1">
+                    <Icon name="ChevronDown" size={14} /> System/Build_Logs (Education)
+                  </div>
+
+                  <div className="mb-5 bg-[#0a0a0c] border border-slate-800 border-l-2 border-l-green-500 p-4 rounded group hover:border-green-500/50 transition-colors shadow-inner">
+                    <div className="flex items-center gap-2 text-[10px] text-slate-500 mb-2.5 font-mono">
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-400"></span>
+                      String Academic_Status = 
+                    </div>
+                    <div className="text-green-300 text-sm font-mono leading-loose text-justify">
+                      "{PORTFOLIO_DATA.academic_records}"
+                    </div>
+                  </div>
+
+                  <div className="relative border-l border-slate-700 ml-2 space-y-6">
+                    {PORTFOLIO_DATA.education.map((edu, index) => (
+                      <div key={index} className="relative pl-6 group">
+                        <div className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e] group-hover:scale-150 transition-transform"></div>
+                        <div className="bg-[#0a0a0c] border border-slate-700 p-5 rounded group-hover:border-green-500/50 transition-colors">
+                          <div className="flex flex-col gap-1 mb-3">
+                            <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                              <Icon name="GraduationCap" size={14} className="text-green-400" />
+                              {edu.degree}
+                            </h3>
+                            <div className="flex flex-wrap items-center justify-between gap-1">
+                              <span className="text-green-400/80 text-xs font-bold">@ {edu.school}</span>
+                              <span className="px-1.5 py-0.5 bg-[#1a1f29] border border-slate-700 text-[10px] text-slate-400 rounded">
+                                {edu.year}
+                              </span>
                             </div>
                           </div>
-                          <p className="text-slate-400 text-sm md:text-base font-sans max-w-4xl">
-                            {selectedProject.description}
+                          <p className="text-sm text-slate-400 leading-loose font-sans">
+                            {edu.details}
                           </p>
                         </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
 
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12">
-                          <div className="lg:col-span-7 flex flex-col gap-6">
-                            {selectedProject.details?.video ? (
-                              <div className="w-full aspect-video bg-black border border-slate-700 rounded overflow-hidden shadow-lg relative group">
-                                {renderVideo(selectedProject.details.video)}
-                              </div>
-                            ) : (
-                              <div className="w-full aspect-video bg-black border border-slate-700 rounded overflow-hidden shadow-lg relative">
-                                <img 
-                                  src={selectedProject.image} 
-                                  alt={selectedProject.title} 
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                            )}
-
-                            {selectedProject.details?.images && selectedProject.details.images.length > 0 && (
-                              <div>
-                                <div className="text-xs text-slate-500 mb-3 font-bold flex items-center gap-2">
-                                  <Icon name="Box" size={14} /> MEDIA_GALLERY
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                  {selectedProject.details.images.map((imgUrl, idx) => (
-                                    <a href={imgUrl} target="_blank" rel="noreferrer" key={idx} className="block overflow-hidden rounded border border-slate-800 hover:border-[#00f0ff] transition-colors aspect-video group">
-                                       <img src={imgUrl} alt={`gallery-${idx}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                                    </a>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="lg:col-span-5 flex flex-col">
-                            <div className="bg-[#151921] border border-slate-800 p-5 rounded mb-8 shadow-inner">
-                              <div className="text-xs font-bold text-[#00f0ff] mb-4 flex items-center gap-2">
-                                <Icon name="Link2" size={14} /> CORE_LOGIC_CONTRIBUTIONS
-                              </div>
-                              <ul className="space-y-3 text-sm text-slate-300 font-sans">
-                                {selectedProject.contributions.map((item, i) => (
-                                  <li key={i} className="flex items-start gap-3">
-                                    <span className="text-[#00f0ff] mt-0.5 font-mono">{">"}</span>
-                                    <span className="leading-relaxed">{item}</span>
-                                  </li>
-                                ))}
-                              </ul>
+                <div className="p-4 md:p-5 flex-1 bg-[#151921]/30 border-t border-slate-700/50">
+                  <div className="text-xs text-blue-400 mb-4 font-bold flex items-center gap-1">
+                    <Icon name="ChevronDown" size={14} /> System/Process_Logs (Internship)
+                  </div>
+                  <div className="relative border-l border-slate-700 ml-2 space-y-6">
+                    {PORTFOLIO_DATA.internships.map((intern, index) => (
+                      <div key={index} className="relative pl-6 group">
+                        <div className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_#3b82f6] group-hover:scale-150 transition-transform"></div>
+                        <div className="bg-[#0a0a0c] border border-slate-700 p-5 rounded group-hover:border-blue-500/50 transition-colors">
+                          <div className="flex flex-col gap-1 mb-3">
+                            <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                              <Icon name="Briefcase" size={14} className="text-blue-400" />
+                              {intern.title}
+                            </h3>
+                            <div className="flex flex-wrap items-center justify-between gap-1">
+                              <span className="text-blue-400/80 text-xs font-bold">@ {intern.company}</span>
+                              <span className="px-1.5 py-0.5 bg-[#1a1f29] border border-slate-700 text-[10px] text-slate-400 rounded">
+                                {intern.year}
+                              </span>
                             </div>
+                          </div>
+                          <p className="text-sm text-slate-400 leading-loose font-sans">
+                            {intern.details}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
 
-                            {selectedProject.details?.longText && (
-                              <div className="flex-1">
-                                <div className="text-xs text-slate-500 mb-3 font-bold flex items-center gap-2">
-                                  <Icon name="FileText" size={14} /> DESIGNER_NOTES.md
-                                </div>
-                                <div className="text-slate-400 text-sm font-sans leading-loose whitespace-pre-wrap text-justify bg-[#0a0a0c] border-l-2 border-slate-700 pl-4 py-2">
-                                  {selectedProject.details.longText}
-                                </div>
-                              </div>
-                            )}
+            {/* 右侧面板：Data Asset */}
+            <div className="lg:col-span-7">
+              <div className="bg-[#1a1f29] border border-slate-700 rounded shadow-xl overflow-hidden font-mono flex flex-col h-full">
+                <div className="bg-slate-800 px-3 py-1.5 text-xs text-slate-300 flex items-center justify-between border-b border-slate-700">
+                  <span className="flex items-center gap-2 font-bold"><Icon name="Box" size={14}/> Data Asset</span>
+                  <span className="text-slate-500">Database</span>
+                </div>
+                
+                <div className="p-4 md:p-5 border-b border-slate-700/50">
+                  <div className="text-xs text-slate-400 mb-5 font-bold flex items-center gap-1">
+                    <Icon name="ChevronDown" size={14} /> Variables (Skills)
+                  </div>
+                  <div className="flex flex-col gap-5">
+                    {PORTFOLIO_DATA.skills.map((skill, index) => (
+                      <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-3 group">
+                        <div className="w-full sm:w-40 flex items-center gap-2 text-sm text-slate-300">
+                          <span className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                            skill.type === 'Float' ? 'bg-green-400' : 
+                            skill.type === 'Vector3' ? 'bg-amber-400' : 
+                            skill.type === 'String' ? 'bg-purple-400' : 'bg-red-400'
+                          }`}></span>
+                          <span className="truncate">{skill.name}</span>
+                        </div>
+                        <div className="flex-1 flex items-center gap-3">
+                          <div className="flex-1 h-3.5 bg-[#0a0a0c] rounded-sm border border-slate-700 relative overflow-hidden group-hover:border-slate-500 transition-colors">
+                            <div 
+                              className="h-full bg-slate-600 group-hover:bg-[#00f0ff] transition-colors relative"
+                              style={{ width: `${skill.level}%` }}
+                            >
+                              <div className="absolute right-0 top-0 bottom-0 w-1 bg-white opacity-50"></div>
+                            </div>
+                          </div>
+                          <div className="w-12 bg-[#0a0a0c] border border-slate-700 text-slate-300 text-xs text-center py-1 rounded cursor-ns-resize hover:border-[#00f0ff] transition-colors flex-shrink-0">
+                            {skill.level}.0
                           </div>
                         </div>
                       </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div id="gaming" className="p-4 md:p-5 flex-1 bg-[#151921]/30">
+                  <div className="text-xs text-purple-400 mb-4 font-bold flex items-center gap-1">
+                    <Icon name="ChevronDown" size={14} /> Database/Playtest_Records
+                  </div>
+
+                  <div className="mb-5 bg-[#0a0a0c] border border-slate-800 border-l-2 border-l-purple-500 p-4 rounded group hover:border-purple-500/50 transition-colors shadow-inner">
+                    <div className="flex items-center gap-2 text-[10px] text-slate-500 mb-2.5 font-mono">
+                      <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+                      String Core_Philosophy = 
+                    </div>
+                    <div className="text-purple-300 text-sm font-mono leading-loose text-justify">
+                      "{PORTFOLIO_DATA.gaming_insight}"
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {PORTFOLIO_DATA.gaming.map((game, index) => (
+                      <div key={index} className="bg-[#0a0a0c] border border-slate-800 rounded p-5 hover:border-purple-500/50 transition-all flex flex-col group shadow-lg">
+                        <div className="flex justify-between items-start mb-4 gap-2">
+                          <h3 className="text-base font-bold text-slate-200 group-hover:text-purple-400 transition-colors flex items-center gap-2">
+                            <Icon name="Gamepad2" size={16} />
+                            <span className="truncate">{game.name}</span>
+                          </h3>
+                          <div className="flex items-center gap-1 text-[10px] text-slate-500 bg-[#1a1f29] px-2.5 py-1 rounded border border-slate-800 whitespace-nowrap">
+                            <Icon name="Clock" size={10} />
+                            {game.hours}
+                          </div>
+                        </div>
+                        
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {game.tags.map((tag, i) => (
+                            <span key={i} className="text-[10px] px-2 py-0.5 border border-slate-700 text-slate-400 rounded bg-[#151921]">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                        
+                        <div className="mt-auto bg-[#1a1f29] p-3.5 rounded border-l-2 border-purple-500 text-sm text-slate-400 font-sans leading-relaxed">
+                          <span className="text-purple-500 font-mono text-[10px] mb-1.5 block">{"// Designer Note:"}</span>
+                          {game.remark}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 内容浏览器 (Projects) */}
+        <section id="projects" className="py-16 md:py-24 px-4 md:px-6 relative bg-[#0a0a0c]">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center gap-2 font-mono text-sm text-slate-400 mb-8 bg-[#151921] border border-slate-800 p-2 rounded w-fit">
+              <span className="text-slate-500">Content</span>
+              <span>/</span>
+              <span className="text-[#00f0ff]">Projects</span>
+              <span>/</span>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {PORTFOLIO_DATA.projects.map((project) => (
+                <div key={project.id} className="group relative bg-[#151921] rounded overflow-hidden border border-slate-800 hover:border-[#00f0ff]/80 transition-all duration-300 flex flex-col font-mono shadow-lg hover:shadow-[0_0_20px_rgba(0,240,255,0.15)]">
+                  
+                  {/* 角落锁定框 */}
+                  <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#00f0ff] opacity-0 group-hover:opacity-100 transition-opacity z-20"></div>
+                  <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-[#00f0ff] opacity-0 group-hover:opacity-100 transition-opacity z-20"></div>
+                  <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-[#00f0ff] opacity-0 group-hover:opacity-100 transition-opacity z-20"></div>
+                  <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#00f0ff] opacity-0 group-hover:opacity-100 transition-opacity z-20"></div>
+
+                  <div className="absolute top-3 right-3 z-20 bg-black/60 backdrop-blur px-2 py-1 text-[10px] text-[#00f0ff] border border-[#00f0ff]/30 rounded flex items-center gap-1">
+                    <Icon name="Code" size={10} />
+                    {project.engine}
+                  </div>
+
+                  <div className="h-56 overflow-hidden relative cursor-pointer" onClick={() => setSelectedProject(project)}>
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#151921] to-transparent z-10"></div>
+                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20 mix-blend-overlay z-10 pointer-events-none"></div>
+                    <img 
+                      src={project.image} 
+                      alt={project.title} 
+                      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 grayscale-[30%] group-hover:grayscale-0"
+                    />
+                    {/* 悬停提示图标 */}
+                    <div className="absolute inset-0 z-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/40 backdrop-blur-[2px]">
+                       <div className="flex items-center gap-2 bg-[#00f0ff] text-black px-4 py-2 rounded font-bold text-sm tracking-wider">
+                         <Icon name="Maximize2" size={16} /> INSPECT_ASSET()
+                       </div>
+                    </div>
+                  </div>
+
+                  <div className="p-5 md:p-6 flex-1 flex flex-col relative z-20 -mt-6">
+                    <div className="bg-[#0f1115] border border-slate-700 p-4 rounded shadow-lg mb-4 cursor-pointer hover:border-[#00f0ff]/50 transition-colors" onClick={() => setSelectedProject(project)}>
+                      <div className="flex justify-between items-baseline mb-1">
+                        <h3 className="text-xl font-bold text-white tracking-tight group-hover:text-[#00f0ff] transition-colors">
+                          {project.title}
+                        </h3>
+                        <span className="text-[10px] text-slate-500">{project.id}</span>
+                      </div>
+                      <p className="text-xs text-amber-400 mb-2">{project.genre} | Role: {project.role}</p>
+                      <p className="text-slate-400 text-sm leading-relaxed font-sans line-clamp-2">
+                        {project.description}
+                      </p>
+                    </div>
+
+                    <div className="mb-6 flex-1">
+                      <div className="text-xs font-bold text-slate-500 mb-2 border-b border-slate-800 pb-1 flex items-center gap-2">
+                        <Icon name="Link2" size={12} /> CORE_LOGIC_CONTRIBUTIONS
+                      </div>
+                      <ul className="space-y-2 text-sm text-slate-300 font-sans">
+                        {project.contributions.map((item, i) => (
+                          <li key={i} className="flex items-start gap-2">
+                            <span className="text-[#00f0ff] mt-1 font-mono">{">"}</span>
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
                     </div>
                   </div>
                 </div>
-              )}
+              ))}
             </div>
-          );
-        }
+          </div>
+        </section>
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<PortfolioApp />);
-    </script>
-</body>
-</html>
+        {/* Contact (Compile Event) */}
+        <section id="contact" ref={contactRef} className="py-24 md:py-32 bg-[#0a0a0c] border-t border-slate-800 relative font-mono">
+          <div className="max-w-3xl mx-auto px-6 text-center relative z-10">
+            <div className="inline-block p-4 rounded-full bg-slate-900 border border-slate-700 mb-6 text-slate-500">
+              <Icon name="Terminal" size={32} />
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-2">Init_Connection()</h2>
+            <p className="text-slate-400 mb-8 text-sm font-sans max-w-xl mx-auto">
+              正在寻找系统策划/关卡策划实习岗位。如果我的属性面板符合你们的项目需求，可点击下方编译请求连接。
+            </p>
+            
+            <button 
+              onClick={handleCopyEmail}
+              className="group relative inline-flex items-center justify-center gap-2 px-8 py-3 bg-transparent text-[#00f0ff] font-bold text-sm overflow-hidden border border-[#00f0ff] rounded cursor-pointer transition-all active:scale-95"
+            >
+              <span className="absolute inset-0 bg-[#00f0ff] w-0 group-hover:w-full transition-all duration-300 ease-out z-0"></span>
+              <Icon name={isCopied ? "Check" : "Mail"} size={16} className="relative z-10 group-hover:text-[#0a0a0c] transition-colors" />
+              <span className="relative z-10 group-hover:text-[#0a0a0c] transition-colors uppercase tracking-wider">
+                {isCopied ? "COPIED TO CLIPBOARD" : "EXECUTE COPY_EMAIL"}
+              </span>
+            </button>
+          </div>
+        </section>
+      </main>
+
+      <footer className="py-2 px-4 border-t border-slate-800 bg-[#0f1115] text-slate-500 font-mono text-[10px] flex flex-col sm:flex-row justify-between items-center z-30 relative gap-2">
+        <div className="flex gap-4">
+          <span>Output Log</span>
+          <span className="text-green-500">Compile Complete (0 errors, 0 warnings)</span>
+        </div>
+        <span>© {new Date().getFullYear()} {PORTFOLIO_DATA.name} | React Engine</span>
+      </footer>
+
+      <div className={`fixed bottom-12 right-6 bg-[#1a1f29] border-l-4 border-amber-500 shadow-2xl p-4 font-mono transform transition-all duration-500 z-30 flex items-start gap-3 w-72 ${achievementUnlocked ? 'translate-x-0 opacity-100' : 'translate-x-[150%] opacity-0'}`}>
+        <Icon name="Trophy" size={20} className="text-amber-500 mt-1 flex-shrink-0" />
+        <div>
+          <p className="text-amber-500 text-[10px] font-bold tracking-widest mb-1">系统_通知</p>
+          <p className="text-slate-200 text-xs">成就已解锁：<br/><span className="text-white font-bold">"探索到底"</span></p>
+          <p className="text-slate-500 text-[10px] mt-1 line-clamp-2">发现隐藏策划。欢迎各位联系...</p>
+        </div>
+      </div>
+
+      {/* ================= 二级界面：Asset Viewer (项目详情弹窗) ================= */}
+      {selectedProject && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-6 md:p-10 font-mono animate-in fade-in duration-200">
+          {/* 背景遮罩 */}
+          <div 
+            className="absolute inset-0 bg-[#050505]/90 backdrop-blur-md cursor-pointer"
+            onClick={() => setSelectedProject(null)}
+          ></div>
+
+          {/* 弹窗主体容器 */}
+          <div className="relative bg-[#0f1115] border border-slate-600 rounded-lg shadow-2xl w-full max-w-6xl h-full max-h-full md:max-h-[90vh] flex flex-col overflow-hidden z-10">
+            
+            {/* 窗口头部菜单栏 */}
+            <div className="flex justify-between items-center bg-slate-800 px-4 py-2 border-b border-slate-600 flex-shrink-0">
+              <div className="flex items-center gap-3">
+                <span className="flex gap-1.5 items-center text-[#00f0ff]">
+                  <Icon name="Terminal" size={16} />
+                </span>
+                <span className="text-xs text-slate-300 font-bold ml-2">Asset_Viewer.exe - [{selectedProject.id}]</span>
+              </div>
+              <button 
+                onClick={() => setSelectedProject(null)}
+                className="text-slate-400 hover:text-white transition-colors p-1"
+                title="Close"
+              >
+                <Icon name="X" size={18} />
+              </button>
+            </div>
+
+            {/* 窗口内容区 */}
+            <div className="flex-1 overflow-y-auto overflow-x-hidden bg-[#0a0a0c] custom-scrollbar">
+              <div className="p-5 md:p-8 lg:p-10">
+                
+                {/* 顶部标题与标签，继承原项目的Icon设计 */}
+                <div className="mb-8 border-b border-slate-800 pb-6">
+                  <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-4">
+                    <div>
+                      <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-2">
+                        {selectedProject.title}
+                      </h2>
+                      <div className="flex flex-wrap items-center gap-3 text-sm">
+                        <span className="text-amber-400 font-bold">{selectedProject.genre}</span>
+                        <span className="text-slate-500">|</span>
+                        <span className="text-slate-300">Role: {selectedProject.role}</span>
+                      </div>
+                    </div>
+                    {/* 保留原本的引擎Icon标识 */}
+                    <div className="flex items-center gap-2 bg-[#1a1f29] border border-slate-700 px-3 py-1.5 rounded text-[#00f0ff] text-xs">
+                      <Icon name="Code" size={14} />
+                      <span className="font-bold uppercase">Engine: {selectedProject.engine}</span>
+                    </div>
+                  </div>
+                  <p className="text-slate-400 text-sm md:text-base font-sans max-w-4xl">
+                    {selectedProject.description}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12">
+                  
+                  {/* 左侧：多媒体展示 (视频优先) */}
+                  <div className="lg:col-span-7 flex flex-col gap-6">
+                    {/* 视频容器 */}
+                    {selectedProject.details?.video ? (
+                      <div className="w-full aspect-video bg-black border border-slate-700 rounded overflow-hidden shadow-lg relative group">
+                        {renderVideo(selectedProject.details.video)}
+                      </div>
+                    ) : (
+                      // 没有视频时展示主封面图
+                      <div className="w-full aspect-video bg-black border border-slate-700 rounded overflow-hidden shadow-lg relative">
+                        <img 
+                          src={selectedProject.image} 
+                          alt={selectedProject.title} 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+
+                    {/* 图片画廊 */}
+                    {selectedProject.details?.images && selectedProject.details.images.length > 0 && (
+                      <div>
+                        <div className="text-xs text-slate-500 mb-3 font-bold flex items-center gap-2">
+                          <Icon name="Box" size={14} /> MEDIA_GALLERY
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          {selectedProject.details.images.map((imgUrl, idx) => (
+                            <a href={imgUrl} target="_blank" rel="noreferrer" key={idx} className="block overflow-hidden rounded border border-slate-800 hover:border-[#00f0ff] transition-colors aspect-video group">
+                               <img src={imgUrl} alt={`gallery-${idx}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 右侧：详细说明与原项目的Contributions */}
+                  <div className="lg:col-span-5 flex flex-col">
+                    
+                    {/* 策划贡献列表 (继承自原组件) */}
+                    <div className="bg-[#151921] border border-slate-800 p-5 rounded mb-8 shadow-inner">
+                      <div className="text-xs font-bold text-[#00f0ff] mb-4 flex items-center gap-2">
+                        <Icon name="Link2" size={14} /> CORE_LOGIC_CONTRIBUTIONS
+                      </div>
+                      <ul className="space-y-3 text-sm text-slate-300 font-sans">
+                        {selectedProject.contributions.map((item, i) => (
+                          <li key={i} className="flex items-start gap-3">
+                            <span className="text-[#00f0ff] mt-0.5 font-mono">{">"}</span>
+                            <span className="leading-relaxed">{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* 新增的长段落设计介绍 */}
+                    {selectedProject.details?.longText && (
+                      <div className="flex-1">
+                        <div className="text-xs text-slate-500 mb-3 font-bold flex items-center gap-2">
+                          <Icon name="FileText" size={14} /> DESIGNER_NOTES.md
+                        </div>
+                        <div className="text-slate-400 text-sm font-sans leading-loose whitespace-pre-wrap text-justify bg-[#0a0a0c] border-l-2 border-slate-700 pl-4 py-2">
+                          {selectedProject.details.longText}
+                        </div>
+                      </div>
+                    )}
+
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 在这里顺便加一点内联样式用于美化弹窗的滚动条 */}
+      <style dangerouslySetInnerHTML={{__html: `
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #0a0a0c; 
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #1e293b; 
+          border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #334155; 
+        }
+      `}} />
+    </div>
+  );
+}
