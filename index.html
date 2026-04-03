@@ -39,6 +39,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
+        // 这一步非常重要：在 HTML 环境中直接从全局对象 React 中获取，而不使用 import 语句
         const { useState, useEffect, useRef } = React;
 
         // --- 内置 SVG 图标组件 ---
