@@ -18,6 +18,21 @@
         .custom-scrollbar::-webkit-scrollbar-track { background: #0a0a0c; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #334155; }
+        
+        /* 导出 PDF 的打印样式 */
+        @media print {
+            body { 
+                -webkit-print-color-adjust: exact !important; 
+                print-color-adjust: exact !important; 
+                background-color: #0a0a0c !important; 
+            }
+            nav, button, .animate-pulse, .fixed.bottom-12 { display: none !important; }
+            section, .bg-\\[\\#1a1f29\\], .bg-\\[\\#151921\\] { 
+                page-break-inside: avoid; 
+                break-inside: avoid; 
+            }
+            @page { margin: 1cm; }
+        }
     </style>
 </head>
 <body>
@@ -49,7 +64,8 @@
             Briefcase: <><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></>,
             X: <><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>,
             Maximize2: <><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></>,
-            Check: <><polyline points="20 6 9 17 4 12"/></>
+            Check: <><polyline points="20 6 9 17 4 12"/></>,
+            Printer: <><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></>
           };
           
           return (
@@ -86,11 +102,11 @@
             STR: 85, AGI: 80, INT: 90, WIS: 75
           },
           skills: [
-            { name: "System_&_Math", level: 90, icon: <Icon name="Network" size={16} />, type: "Float" },
-            { name: "Level_Design", level: 95, icon: <Icon name="Box" size={16} />, type: "Vector3" },
-            { name: "Narrative_Flow", level: 85, icon: <Icon name="Layers" size={16} />, type: "String" },
-            { name: "Unity_Proto", level: 90, icon: <Icon name="Cpu" size={16} />, type: "Boolean" },
-            { name: "UE5_Blueprint", level: 75, icon: <Icon name="Settings2" size={16} />, type: "Event" }
+            { name: "系统与数值设计", level: 90, icon: <Icon name="Network" size={16} />, type: "Float" },
+            { name: "关卡设计", level: 95, icon: <Icon name="Box" size={16} />, type: "Vector3" },
+            { name: "剧情叙事", level: 85, icon: <Icon name="Layers" size={16} />, type: "String" },
+            { name: "Unity 原型开发", level: 90, icon: <Icon name="Cpu" size={16} />, type: "Boolean" },
+            { name: "UE5 蓝图", level: 75, icon: <Icon name="Settings2" size={16} />, type: "Event" }
           ],
           projects: [
             {
@@ -175,7 +191,7 @@
                 "实事调研：实地与书本调研数据，通过Excel完成数据清洗、整合与可视化分析，将其转化为网站内容。",
               ],
               details: {
-                video: `<iframe src="//player.bilibili.com/player.html?isOutside=true&aid=116249849826374&bvid=BV1pPwqzAEH3&cid=36791454506&p=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"></iframe>`,
+                video: `<iframe src="//player.bilibili.com/player.html?isOutside=true&aid=116335698774586&bvid=BV1fC9wBuEVi&cid=37182639278&p=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"></iframe>`,
                 longText: "策划并实现了一个科普意义的趣味性交互网站，聚焦上海石库门的建筑记忆与城市变迁。系统采集了里弄生活的声音、图像与口述史料，融合艺术化信息图表与可交互数据叙事——用户可点击对比不同年代的建筑形态、人口密度与空间演变；同时嵌入生活化情节与声音情感引擎，跟随虚拟住户的脚步，在天井、客堂间与灶披间中触发叫卖声、沪剧片段与邻里闲聊，形成沉浸式听觉体验。整个项目以Unity开发并发布为WebGL交互页面，兼顾严肃游戏的任务机制与纪录片的细腻温度，旨在让更多人看见石库门逐渐消逝的美，从一砖一瓦的百年兴衰中直观感知上海乃至世界的变迁。",
                 images: [
                   "https://github.com/user-attachments/assets/0596099e-656e-4d14-b25b-ec2b721fbc42",
@@ -211,10 +227,10 @@
           ],
           gaming_insight: "作为一名杂食性硬核玩家，我相信'量变引起质变'。桌游、主机、PC、手游超过三千小时的各类游戏体验，让我习惯于带着『为什么好玩』的疑问去解构每一个核心循环。我不仅体验沉浸感，更致力于拆解构成这种沉浸感的系统齿轮与关卡骨架。",
           gaming: [
-            { name: "燕云十六声", hours: "300+", tags: ["Action RPG", "Level Design"], remark: "深入拆解了其天宫地窟的箱庭连接与暗线引导设计，并进行仿照搭建白盒测试。" },
-            { name: "模拟人生4", hours: "1000+", tags: ["FPS RPG", "Narrative"], remark: "研究了其任务网状结构与系统的迭代，并自己制作了多款Mod以深化游戏体验。" },
-            { name: "刺客信条多系列", hours: "500+", tags: ["Metroidvania", "Pacing"], remark: "全多周目通关，极其克制且精准的动作帧设计，绝佳的大地图探索节奏。" },
-            { name: "塞尔达传说王国之泪", hours: "200+", tags: ["Simulation", "System Design"], remark: "二周目探索中，深入拆解了其物理引擎系统所构建的多个趣味玩法组合。" }
+            { name: "燕云十六声", hours: "300+", tags: ["动作角色扮演", "箱庭关卡"], remark: "深入拆解了其天宫地窟的箱庭连接与暗线引导设计，并进行仿照搭建白盒测试。" },
+            { name: "模拟人生4", hours: "1000+", tags: ["生活模拟", "系统架构"], remark: "研究了其任务网状结构与系统的迭代，并自己制作了多款Mod以深化游戏体验。" },
+            { name: "刺客信条多系列", hours: "500+", tags: ["动作冒险", "开放世界"], remark: "全多周目通关，极其克制且精准的动作帧设计，绝佳的大地图探索节奏。" },
+            { name: "塞尔达传说王国之泪", hours: "200+", tags: ["开放世界", "物理驱动"], remark: "二周目探索中，深入拆解了其物理引擎系统所构建的多个趣味玩法组合。" }
           ]
         };
 
@@ -329,6 +345,9 @@
                   <button onClick={() => scrollToSection('skills')} className="px-4 py-2 hover:bg-slate-800 hover:text-[#00f0ff] transition-colors">Inspector</button>
                   <button onClick={() => scrollToSection('projects')} className="px-4 py-2 hover:bg-slate-800 hover:text-[#00f0ff] transition-colors">Content</button>
                   <button onClick={() => scrollToSection('contact')} className="px-4 py-2 hover:bg-slate-800 hover:text-[#00f0ff] transition-colors">Terminal</button>
+                  <button onClick={() => window.print()} className="px-4 py-2 hover:bg-slate-800 text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-1 border-l border-slate-800">
+                    <Icon name="Printer" size={14}/> Export_PDF
+                  </button>
                 </div>
               </nav>
 
@@ -451,12 +470,12 @@
                             <Icon name="ChevronDown" size={14} /> System/Build_Logs (Education)
                           </div>
 
-                          <div className="mb-5 bg-[#0a0a0c] border border-slate-800 border-l-2 border-l-green-500 p-3 rounded group hover:border-green-500/50 transition-colors shadow-inner">
-                            <div className="flex items-center gap-2 text-[10px] text-slate-500 mb-1.5 font-mono">
+                          <div className="mb-5 bg-[#0a0a0c] border border-slate-800 border-l-2 border-l-green-500 p-4 rounded group hover:border-green-500/50 transition-colors shadow-inner">
+                            <div className="flex items-center gap-2 text-[10px] text-slate-500 mb-2.5 font-mono">
                               <span className="w-1.5 h-1.5 rounded-full bg-green-400"></span>
                               String Academic_Status = 
                             </div>
-                            <div className="text-green-300 text-xs font-mono leading-relaxed text-justify">
+                            <div className="text-green-300 text-sm font-mono leading-loose text-justify">
                               "{PORTFOLIO_DATA.academic_records}"
                             </div>
                           </div>
@@ -465,8 +484,8 @@
                             {PORTFOLIO_DATA.education.map((edu, index) => (
                               <div key={index} className="relative pl-6 group">
                                 <div className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e] group-hover:scale-150 transition-transform"></div>
-                                <div className="bg-[#0a0a0c] border border-slate-700 p-4 rounded group-hover:border-green-500/50 transition-colors">
-                                  <div className="flex flex-col gap-1 mb-2">
+                                <div className="bg-[#0a0a0c] border border-slate-700 p-5 rounded group-hover:border-green-500/50 transition-colors">
+                                  <div className="flex flex-col gap-1 mb-3">
                                     <h3 className="text-sm font-bold text-white flex items-center gap-2">
                                       <Icon name="GraduationCap" size={14} className="text-green-400" />
                                       {edu.degree}
@@ -478,7 +497,7 @@
                                       </span>
                                     </div>
                                   </div>
-                                  <p className="text-xs text-slate-400 leading-relaxed font-sans">
+                                  <p className="text-sm text-slate-400 leading-loose font-sans">
                                     {edu.details}
                                   </p>
                                 </div>
@@ -495,8 +514,8 @@
                             {PORTFOLIO_DATA.internships.map((intern, index) => (
                               <div key={index} className="relative pl-6 group">
                                 <div className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_#3b82f6] group-hover:scale-150 transition-transform"></div>
-                                <div className="bg-[#0a0a0c] border border-slate-700 p-4 rounded group-hover:border-blue-500/50 transition-colors">
-                                  <div className="flex flex-col gap-1 mb-2">
+                                <div className="bg-[#0a0a0c] border border-slate-700 p-5 rounded group-hover:border-blue-500/50 transition-colors">
+                                  <div className="flex flex-col gap-1 mb-3">
                                     <h3 className="text-sm font-bold text-white flex items-center gap-2">
                                       <Icon name="Briefcase" size={14} className="text-blue-400" />
                                       {intern.title}
@@ -508,7 +527,7 @@
                                       </span>
                                     </div>
                                   </div>
-                                  <p className="text-xs text-slate-400 leading-relaxed font-sans">
+                                  <p className="text-sm text-slate-400 leading-loose font-sans">
                                     {intern.details}
                                   </p>
                                 </div>
@@ -564,40 +583,40 @@
                             <Icon name="ChevronDown" size={14} /> Database/Playtest_Records
                           </div>
 
-                          <div className="mb-5 bg-[#0a0a0c] border border-slate-800 border-l-2 border-l-purple-500 p-3 rounded group hover:border-purple-500/50 transition-colors shadow-inner">
-                            <div className="flex items-center gap-2 text-[10px] text-slate-500 mb-1.5 font-mono">
+                          <div className="mb-5 bg-[#0a0a0c] border border-slate-800 border-l-2 border-l-purple-500 p-4 rounded group hover:border-purple-500/50 transition-colors shadow-inner">
+                            <div className="flex items-center gap-2 text-[10px] text-slate-500 mb-2.5 font-mono">
                               <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
                               String Core_Philosophy = 
                             </div>
-                            <div className="text-purple-300 text-xs font-mono leading-relaxed text-justify">
+                            <div className="text-purple-300 text-sm font-mono leading-loose text-justify">
                               "{PORTFOLIO_DATA.gaming_insight}"
                             </div>
                           </div>
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             {PORTFOLIO_DATA.gaming.map((game, index) => (
-                              <div key={index} className="bg-[#0a0a0c] border border-slate-800 rounded p-4 hover:border-purple-500/50 transition-all flex flex-col group shadow-lg">
-                                <div className="flex justify-between items-start mb-3 gap-2">
-                                  <h3 className="text-sm font-bold text-slate-200 group-hover:text-purple-400 transition-colors flex items-center gap-2">
-                                    <Icon name="Gamepad2" size={14} />
+                              <div key={index} className="bg-[#0a0a0c] border border-slate-800 rounded p-5 hover:border-purple-500/50 transition-all flex flex-col group shadow-lg">
+                                <div className="flex justify-between items-start mb-4 gap-2">
+                                  <h3 className="text-base font-bold text-slate-200 group-hover:text-purple-400 transition-colors flex items-center gap-2">
+                                    <Icon name="Gamepad2" size={16} />
                                     <span className="truncate">{game.name}</span>
                                   </h3>
-                                  <div className="flex items-center gap-1 text-[10px] text-slate-500 bg-[#1a1f29] px-2 py-1 rounded border border-slate-800 whitespace-nowrap">
+                                  <div className="flex items-center gap-1 text-[10px] text-slate-500 bg-[#1a1f29] px-2.5 py-1 rounded border border-slate-800 whitespace-nowrap">
                                     <Icon name="Clock" size={10} />
                                     {game.hours}
                                   </div>
                                 </div>
                                 
-                                <div className="flex flex-wrap gap-1.5 mb-3">
+                                <div className="flex flex-wrap gap-2 mb-4">
                                   {game.tags.map((tag, i) => (
-                                    <span key={i} className="text-[9px] px-1.5 py-0.5 border border-slate-700 text-slate-400 rounded bg-[#151921]">
+                                    <span key={i} className="text-[10px] px-2 py-0.5 border border-slate-700 text-slate-400 rounded bg-[#151921]">
                                       {tag}
                                     </span>
                                   ))}
                                 </div>
                                 
-                                <div className="mt-auto bg-[#1a1f29] p-2.5 rounded border-l-2 border-purple-500 text-xs text-slate-400 font-sans">
-                                  <span className="text-purple-500 font-mono text-[10px] mb-1 block">{"// Designer Note:"}</span>
+                                <div className="mt-auto bg-[#1a1f29] p-3.5 rounded border-l-2 border-purple-500 text-sm text-slate-400 font-sans leading-relaxed">
+                                  <span className="text-purple-500 font-mono text-[10px] mb-1.5 block">{"// Designer Note:"}</span>
                                   {game.remark}
                                 </div>
                               </div>
