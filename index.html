@@ -6,9 +6,18 @@
     <title>肖桐 - 游戏策划作品集</title>
     <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 引入 React 和 ReactDOM -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- 配置 Import Map，解决 react/jsx-runtime 模块解析错误 -->
+    <script type="importmap">
+    {
+        "imports": {
+            "react": "https://esm.sh/react@18.2.0",
+            "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+            "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime"
+        }
+    }
+    </script>
+    
     <!-- 引入 Babel 用于在浏览器中编译 JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
@@ -19,6 +28,15 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #334155; }
         
+        /* 双列布局中，末行单独的项目保持单卡宽度并居中。 */
+        @media (min-width: 1024px) {
+            .project-grid > :last-child:nth-child(odd) {
+                grid-column: 1 / -1;
+                width: calc((100% - 2rem) / 2);
+                justify-self: center;
+            }
+        }
+
         /* 导出 PDF 的打印样式 */
         @media print {
             body { 
@@ -38,8 +56,11 @@
 <body>
     <div id="root"></div>
 
-    <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
+    <!-- 添加 data-type="module" 配合 ES Module 导入使用 -->
+    <script type="text/babel" data-type="module">
+        // 使用标准的 ES Module 语法导入 React，配合 Import Map 完美解决报错
+        import React, { useState, useEffect, useRef } from 'react';
+        import { createRoot } from 'react-dom/client';
 
         // --- 内置 SVG 图标组件 ---
         const Icon = ({ name, size = 24, className = "" }) => {
@@ -102,13 +123,39 @@
             STR: 85, AGI: 80, INT: 90, WIS: 75
           },
           skills: [
-            { name: "系统与数值设计", level: 90, icon: <Icon name="Network" size={16} />, type: "Float" },
-            { name: "关卡设计", level: 95, icon: <Icon name="Box" size={16} />, type: "Vector3" },
-            { name: "剧情叙事", level: 85, icon: <Icon name="Layers" size={16} />, type: "String" },
-            { name: "Unity 原型开发", level: 90, icon: <Icon name="Cpu" size={16} />, type: "Boolean" },
-            { name: "UE5 蓝图", level: 75, icon: <Icon name="Settings2" size={16} />, type: "Event" }
+            { name: "系统与数值设计", caption: "SYSTEMS / BALANCING", x: 80, y: 76, size: 30, block: 226 },
+            { name: "玩法设计", caption: "GAMEPLAY DESIGN", x: 330, y: 149, size: 34 },
+            { name: "关卡设计", caption: "LEVEL DESIGN", x: 108, y: 218, size: 42, block: 184 },
+            { name: "剧情叙事", caption: "NARRATIVE DESIGN", x: 365, y: 269, size: 28 },
+            { name: "Unity 原型开发", caption: "PROTOTYPING", x: 62, y: 331, size: 28 },
+            { name: "UE5 蓝图", caption: "BLUEPRINT SCRIPTING", x: 341, y: 371, size: 28, block: 144 }
           ],
           projects: [
+            {
+              id: "PROJ_005",
+              title: "《亲爱的嫌疑人》",
+              genre: "AI驱动的书信体恐怖推理游戏",
+              engine: "Unity",
+              role: "策划-系统/玩法策划",
+              image: "https://elegists.studio/press/keyart/key-art-main.webp",
+              contributionLabel: "CORE_GAMEPLAY_DESIGN",
+              description: "入围2026 indiePlay最佳AI游戏作品。独立开发游戏，以书信调查、AI角色回信与时间循环构建推理体验。",
+              contributions: [
+                "书信推理：围绕读报、写信、派遣助手与整理证据构建调查循环，以每日有限的通信机会形成信息取舍与策略决策。",
+                "角色与循环：NPC依据各自的人格、记忆和知识边界生成回信；死亡重置世界，笔记本保留发现，推动玩家在多轮调查中逼近真相。"
+              ],
+              details: {
+                video: "https://elegists.studio/press/video/trailer-zh.mp4",
+                videoPoster: "https://elegists.studio/press/video/trailer-zh-poster.jpg",
+                longText: "《亲爱的嫌疑人 / Dear Suspect》是一款我和我的朋友们9人独立开发的游戏，我在项目中担任策划-系统/玩法策划。游戏以1906年的落基山脉为背景，玩家藏身林间木屋，通过书信调查黑松镇的家族命案。\n\n玩法围绕信息收集与推理展开：从报纸中发现线索，选择联系人与提问方向，派遣助手搜集物证，再借助笔记本与推理板整理和验证判断。有限的每日通信次数让每次提问都成为资源分配决策。\n\nAI角色回信受到人格、记忆与知识边界约束，玩家需要辨别证词中的偏见与隐瞒。追杀与联系人遭遇将恐怖元素融入调查；死亡后世界重置，但笔记本保留已有发现，让知识积累成为推进调查的关键。\n\n项目使用Unity开发，面向PC（Windows / macOS）与Steam平台，入围2026 indiePlay中国独立游戏大赛最佳AI游戏作品。",
+                images: [
+                  "https://elegists.studio/press/shots/writing-en.webp",
+                  "https://elegists.studio/press/shots/beatrice-zh.webp",
+                  "https://elegists.studio/press/shots/casereport.webp",
+                  "https://elegists.studio/press/shots/newspaper-zh.webp"
+                ]
+              }
+            },
             {
               id: "PROJ_001",
               title: "《Dual Horizon》",
@@ -223,12 +270,18 @@
               company: "叠纸—X6项目组（无限暖暖项目组）",
               year: "2024.10 - 2025.03",
               details: "参与《无限暖暖》的大世界系统开发。负责配置和校验游戏内的道具掉落表，独立策划与配置了1.2、1.3、1.5版本肝活与特定游戏任务《寻找史丢丢》，特定任务广受好评、成为不定期返场玩法。协助主策完成版本迭代的设计文档整理。"
+            },
+            {
+              title: "玩法策划实习生",
+              company: "网易—燕云十六声项目组",
+              year: "2026.06 - 2026.11",
+              details: "参与《燕云十六声》的大世界玩法。全流程策划与配置3个微解谜宝箱与5个全新大世界玩法，并推动落地。完成8份配置指导KM文档。"
             }
           ],
           gaming_insight: "作为一名杂食性硬核玩家，我相信'量变引起质变'。桌游、主机、PC、手游超过三千小时的各类游戏体验，让我习惯于带着『为什么好玩』的疑问去解构每一个核心循环。我不仅体验沉浸感，更致力于拆解构成这种沉浸感的系统齿轮与关卡骨架。",
           gaming: [
             { name: "燕云十六声", hours: "300+", tags: ["动作角色扮演", "箱庭关卡"], remark: "深入拆解天宫地窟的箱庭连接与暗线引导设计，并进行仿照搭建白盒测试。" },
-            { name: "模拟人生4", hours: "1000+", tags: ["生活模拟", "系统架构"], remark: "研究任务网状结构与系统的迭代，并自己制作了多款Mod以深化游戏体验。" },
+            { name: "模拟人生4", hours: "1000+", tags: ["生活模拟", "系统架构"], remark: "研究其任务网状结构与系统的迭代，并自己制作了多款Mod以深化游戏体验。" },
             { name: "刺客信条多系列", hours: "500+", tags: ["动作冒险", "开放世界"], remark: "全多周目通关，极其克制且精准的动作帧设计，绝佳的大地图探索节奏。" },
             { name: "塞尔达传说王国之泪", hours: "200+", tags: ["开放世界", "物理驱动"], remark: "二周目探索中，深入拆解了其物理引擎系统所构建的多个趣味玩法组合。" }
           ]
@@ -292,8 +345,16 @@
             document.body.removeChild(textArea);
           };
 
-          const renderVideo = (videoString) => {
+          const renderVideo = (videoString, poster) => {
             if (!videoString) return null;
+            if (/\.mp4(?:[?#]|$)/i.test(videoString)) {
+              return (
+                <video controls playsInline preload="none" poster={poster} className="w-full h-full object-contain" aria-label="项目预告片">
+                  <source src={videoString} type="video/mp4" />
+                  您的浏览器不支持视频播放。<a href={videoString} target="_blank" rel="noreferrer">打开预告片</a>
+                </video>
+              );
+            }
             if (videoString.trim().startsWith('<iframe')) {
               const safeHtml = videoString.replace(/src="\/\//g, 'src="https://');
               return (
@@ -546,32 +607,33 @@
                           <div className="text-xs text-slate-400 mb-5 font-bold flex items-center gap-1">
                             <Icon name="ChevronDown" size={14} /> Variables (Skills)
                           </div>
-                          <div className="flex flex-col gap-5">
-                            {PORTFOLIO_DATA.skills.map((skill, index) => (
-                              <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-3 group">
-                                <div className="w-full sm:w-40 flex items-center gap-2 text-sm text-slate-300">
-                                  <span className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                                    skill.type === 'Float' ? 'bg-green-400' : 
-                                    skill.type === 'Vector3' ? 'bg-amber-400' : 
-                                    skill.type === 'String' ? 'bg-purple-400' : 'bg-red-400'
-                                  }`}></span>
-                                  <span className="truncate">{skill.name}</span>
-                                </div>
-                                <div className="flex-1 flex items-center gap-3">
-                                  <div className="flex-1 h-3.5 bg-[#0a0a0c] rounded-sm border border-slate-700 relative overflow-hidden group-hover:border-slate-500 transition-colors">
-                                    <div 
-                                      className="h-full bg-slate-600 group-hover:bg-[#00f0ff] transition-colors relative"
-                                      style={{ width: `${skill.level}%` }}
-                                    >
-                                      <div className="absolute right-0 top-0 bottom-0 w-1 bg-white opacity-50"></div>
-                                    </div>
-                                  </div>
-                                  <div className="w-12 bg-[#0a0a0c] border border-slate-700 text-slate-300 text-xs text-center py-1 rounded cursor-ns-resize hover:border-[#00f0ff] transition-colors flex-shrink-0">
-                                    {skill.level}.0
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
+                          <div className="bg-[#0a0a0c] border border-slate-800 rounded shadow-inner overflow-hidden">
+                            <svg viewBox="0 0 560 420" role="img" aria-labelledby="skills-poster-title skills-poster-desc" className="block w-full h-auto" style={{ fontFamily: "Arial, 'Microsoft YaHei', sans-serif" }}>
+                              <title id="skills-poster-title">技能词云</title>
+                              <desc id="skills-poster-desc">{PORTFOLIO_DATA.skills.map(skill => skill.name).join('、')}</desc>
+                              <g aria-hidden="true">
+                                <text x="22" y="25" fontSize="9" letterSpacing="2" fill="#64748b">DESIGN PRACTICE</text>
+                                <text x="538" y="25" textAnchor="end" fontSize="9" letterSpacing="1.5" fill="#64748b">TOOLS &amp; THINKING</text>
+                                <g stroke="#475569" strokeWidth="1" fill="none">
+                                  <path d="M45 60 L65 76 M319 84 L369 112 M346 179 L293 201 M295 222 L350 254 M101 249 L57 294 M271 328 L326 356" />
+                                  <path d="M479 74 L502 205 L478 234" />
+                                </g>
+                                <g fill="#00f0ff" fillOpacity="0.22" stroke="#00f0ff" strokeOpacity="0.5" strokeWidth="1">
+                                  <rect x="28" y="42" width="14" height="29" />
+                                  <rect x="464" y="46" width="21" height="28" />
+                                  <rect x="496" y="205" width="12" height="12" />
+                                  <rect x="40" y="276" width="14" height="26" />
+                                  <rect x="493" y="324" width="25" height="25" />
+                                </g>
+                                {PORTFOLIO_DATA.skills.map((skill) => (
+                                  <g key={skill.name} transform={`translate(${skill.x} ${skill.y})`}>
+                                    {skill.block && <rect x="-8" y={-skill.size + 2} width={skill.block} height={skill.size + 12} fill="#00f0ff" fillOpacity="0.1" stroke="#00f0ff" strokeOpacity="0.3" />}
+                                    <text fontSize={skill.size} fontWeight="700" letterSpacing="-1" fill={skill.block ? '#00f0ff' : '#e2e8f0'}>{skill.name}</text>
+                                    <text y="28" fontSize="11" letterSpacing="1.4" fill="#94a3b8">{skill.caption}</text>
+                                  </g>
+                                ))}
+                              </g>
+                            </svg>
                           </div>
                         </div>
 
@@ -634,7 +696,7 @@
                       <span>/</span>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div className="project-grid grid grid-cols-1 lg:grid-cols-2 gap-8">
                       {PORTFOLIO_DATA.projects.map((project) => (
                         <div key={project.id} className="group relative bg-[#151921] rounded overflow-hidden border border-slate-800 hover:border-[#00f0ff]/80 transition-all duration-300 flex flex-col font-mono shadow-lg hover:shadow-[0_0_20px_rgba(0,240,255,0.15)]">
                           <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#00f0ff] opacity-0 group-hover:opacity-100 transition-opacity z-20"></div>
@@ -678,7 +740,7 @@
 
                             <div className="mb-6 flex-1">
                               <div className="text-xs font-bold text-slate-500 mb-2 border-b border-slate-800 pb-1 flex items-center gap-2">
-                                <Icon name="Link2" size={12} /> CORE_LOGIC_CONTRIBUTIONS
+                                <Icon name="Link2" size={12} /> {project.contributionLabel || "CORE_LOGIC_CONTRIBUTIONS"}
                               </div>
                               <ul className="space-y-2 text-sm text-slate-300 font-sans">
                                 {project.contributions.map((item, i) => (
@@ -789,7 +851,7 @@
                           <div className="lg:col-span-7 flex flex-col gap-6">
                             {selectedProject.details?.video ? (
                               <div className="w-full aspect-video bg-black border border-slate-700 rounded overflow-hidden shadow-lg relative group">
-                                {renderVideo(selectedProject.details.video)}
+                                {renderVideo(selectedProject.details.video, selectedProject.details.videoPoster)}
                               </div>
                             ) : (
                               <div className="w-full aspect-video bg-black border border-slate-700 rounded overflow-hidden shadow-lg relative">
@@ -820,7 +882,7 @@
                           <div className="lg:col-span-5 flex flex-col">
                             <div className="bg-[#151921] border border-slate-800 p-5 rounded mb-8 shadow-inner">
                               <div className="text-xs font-bold text-[#00f0ff] mb-4 flex items-center gap-2">
-                                <Icon name="Link2" size={14} /> CORE_LOGIC_CONTRIBUTIONS
+                                <Icon name="Link2" size={14} /> {selectedProject.contributionLabel || "CORE_LOGIC_CONTRIBUTIONS"}
                               </div>
                               <ul className="space-y-3 text-sm text-slate-300 font-sans">
                                 {selectedProject.contributions.map((item, i) => (
@@ -853,7 +915,7 @@
           );
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
+        const root = createRoot(document.getElementById('root'));
         root.render(<PortfolioApp />);
     </script>
 </body>
